@@ -1,53 +1,174 @@
-🎯 StarkMole
-Decentralized, Competitive, and Rewarding Gaming on StarkNet
+ProofStell Frontend 🌐
+Decentralized Document Verification & Credential Registry on Stellar Soroban
 
-StarkMole is a decentralized whack-a-mole game powered by the StarkNet blockchain. Players connect their wallets, compete in daily mole-hunting challenges, and earn on-chain rewards based on performance — all backed by transparent smart contracts and secure scorekeeping.
+ProofStell is a decentralized platform built on Soroban smart contracts that allows institutions, organizations, and individuals to issue, verify, and manage tamper-proof digital credentials and documents.
+
+Instead of trusting centralized databases, ProofDesk anchors cryptographic proofs of documents on-chain, ensuring authenticity, permanence, and global verifiability.
+
+From academic certificates to employment records and compliance documents, ProofDesk creates a trustless verification infrastructure powered by Stellar
+User interface for the ProofStell decentralized document verification platform.
 
 🚀 Key Features
-🕹️ Blockchain-Powered Gameplay
-Every click counts — mole appearances and scores are managed via secure Cairo smart contracts for verifiable fairness.
+📄 On-Chain Document Proofs
 
-📈 On-Chain Leaderboards
-Compete in global daily challenges with transparent, immutable leaderboards — see your performance ranked in real time.
+Institutions can register documents by storing cryptographic hashes on-chain via Soroban smart contracts.
 
-💰 Verifiable Rewards
-Top players earn blockchain-based rewards. All game outcomes are provably fair and tamper-resistant.
+Anyone can verify a document’s authenticity by comparing its hash with the blockchain record.
 
-🔐 Wallet-Based Authentication
-Players sign in using their StarkNet-compatible wallets — no centralized logins or accounts required.
+🏫 Institutional Issuers
 
-📊 Transparent Scorekeeping
-All gameplay stats and scores are stored on-chain, ensuring integrity and accountability.
+Verified institutions (schools, companies, NGOs) can issue credentials directly to users’ wallets.
 
-🌉 Built on StarkNet
-StarkMole leverages StarkNet’s scalability and low transaction costs to provide a seamless and performant on-chain gaming experience. From gameplay to leaderboards, all logic is verified on-chain using Cairo contracts.
+Examples:
 
-🗂️ Folder Structure
-The project follows a standard Next.js structure:css
+University certificates
 
-src/
-├── app/
-├── components/
-├── ui/
-├── hooks/
-│   └── [custom hooks files]
-├── lib/
-├── pages/
-├── App.css
-├── index.css
-🧠 Why StarkMole?
-✅ Fair and Transparent — gameplay and scoring powered by verifiable contracts
+Employment letters
 
-🎁 Play-to-Earn Mechanics — get rewarded for your performance
+Training certifications
 
-🛡️ Trustless Architecture — no centralized server or data manipulation
+Compliance approvals
 
-🌍 Global Competition — daily leaderboards reset each day for a new challenge
+🔐 Wallet-Based Identity
 
-🎮 Fun Meets Tech — gamification powered by the next-gen blockchain
+Users connect their Stellar wallets to:
 
-📬 Get Involved
-Whether you're a gamer, developer, or StarkNet enthusiast, StarkMole welcomes you! Join our community, contribute to the codebase, or dominate the leaderboards.
+Receive credentials
 
-Stay tuned for future releases, multiplayer modes, new game mechanics, and full documentation.
+Share verifiable proofs
 
+Manage issued documents
+
+No usernames or passwords required.
+
+🔎 Instant Verification
+
+Third parties can verify documents in seconds:
+
+Upload the document
+
+Platform hashes the file
+
+Hash is matched with the blockchain record
+
+Result: Valid / Not Found / Revoked
+
+🧾 Revocation Registry
+
+Issuers can revoke credentials if necessary.
+
+Example cases:
+
+Fraudulent certificates
+
+Expired compliance documents
+
+Recalled licenses
+
+The revocation state is stored on-chain for full transparency.
+
+The frontend enables users, institutions, and third parties to interact with the ProofStell ecosystem.
+
+Users can:
+
+• Upload documents
+• Verify document authenticity
+• View issued credentials
+• Connect Stellar wallets
+
+Overview
+
+ProofStell allows anyone to verify documents in seconds.
+
+Instead of trusting centralized databases, ProofStell anchors document hashes on the Stellar blockchain using Soroban smart contracts.
+
+The frontend provides a simple interface to interact with this decentralized infrastructure.
+
+Features
+
+Document Verification
+
+Upload a document to verify whether it has been registered on-chain.
+
+Credential Dashboard
+
+Users can view all credentials issued to their wallet.
+
+Issuer Portal
+
+Organizations can issue credentials to users.
+
+Wallet Authentication
+
+Users connect using Stellar wallets.
+
+Tech Stack
+
+Framework
+Next.js
+
+Styling
+TailwindCSS
+
+UI Components
+ShadCN UI
+
+Blockchain
+Soroban RPC
+
+Wallet Integration
+Stellar Wallet Kit
+
+Folder Structure
+src
+│
+├── app
+│   ├── dashboard
+│   ├── verify
+│   ├── issuer
+│   └── documents
+│
+├── components
+│
+├── hooks
+│
+├── lib
+│
+├── ui
+│
+└── styles
+How Verification Works
+
+1 User uploads document
+
+2 Frontend hashes the file
+
+3 Hash is sent to backend
+
+4 Backend queries Soroban contract
+
+5 Result is returned to user
+
+Running the Frontend
+
+Install dependencies
+
+npm install
+
+Start development server
+
+npm run dev
+
+Open
+
+http://localhost:3000
+Environment Variables
+NEXT_PUBLIC_API_URL=
+NEXT_PUBLIC_SOROBAN_RPC=
+Future Improvements
+
+• Mobile responsive UI
+• Credential sharing links
+• Public verification explorer
+• QR-based document verification
+• Issuer dashboards
