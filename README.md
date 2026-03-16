@@ -1,4 +1,5 @@
 ProofStell Frontend 🌐
+
 Decentralized Document Verification & Credential Registry on Stellar Soroban
 
 ProofStell is a decentralized platform built on Soroban smart contracts that allows institutions, organizations, and individuals to issue, verify, and manage tamper-proof digital credentials and documents.
