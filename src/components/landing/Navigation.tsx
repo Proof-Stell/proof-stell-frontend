@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 interface NavigationProps {
   onLogin: () => void;
@@ -9,12 +10,12 @@ export const Navigation = ({ onLogin, onSignUp }: NavigationProps) => {
   return (
     <header className="w-full max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
       <div className="flex items-center space-x-3 animate-slideInLeft">
-        <img
+        <Image
           src="https://readdy.ai/api/search-image?query=cute cartoon mole character with goggles and a mining helmet, digital art style, game mascot, purple background, high quality, detailed, vibrant colors&width=60&height=60&seq=logo1&orientation=squarish"
-          alt="StarkMole Logo"
+          alt="Proof-Stell Logo"
           className="h-12 w-12 animate-float"
         />
-        <h1 className="text-2xl font-bold text-purple-300">StarkMole</h1>
+        <h1 className="text-2xl font-bold text-purple-300">Proof-Stell</h1>
       </div>
       <nav className="hidden md:flex items-center space-x-6">
         <a
