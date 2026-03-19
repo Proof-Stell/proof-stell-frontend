@@ -49,6 +49,7 @@ export default function Home() {
     router.push("/signup");
   };
 
+  //const
   return (
     <main className="min-h-screen bg-gray-900 text-white">
       <Navbar onLoginClick={handleLoginClick} />
