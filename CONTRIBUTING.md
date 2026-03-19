@@ -1,16 +1,16 @@
-🕹️ Contributing to StarkMole Backend
-Welcome to the StarkMole Backend – the decentralized backend service powering StarkMole, a blockchain-powered whack-a-mole game built on StarkNet.
+🕹️ Contributing to Proof-Stell Backend
+Welcome to the Proof-Stell Backend – the decentralized backend service powering Proof-Stell, a blockchain-powered whack-a-mole game built on StarkNet.
 
-Whether you're improving game logic, refining the leaderboard, or optimizing the player experience — your contributions bring StarkMole to life. Let's make Web3 gaming more fun, fair, and transparent together!
+Whether you're improving game logic, refining the leaderboard, or optimizing the player experience — your contributions bring Proof-Stell to life. Let's make Web3 gaming more fun, fair, and transparent together!
 
 ⚙️ Setup Instructions
 1. Fork the Project
 Click the Fork button in the top right corner of the GitHub repo.
 
 2. Clone the Repository
-git clone https://github.com/StarkMole/StarkMole-Backend.git
+git clone https://github.com/Proof-Stell/Proof-Stell-Backend.git
 
-cd StarkMole-Backend
+cd Proof-Stell-Backend
 
 4. Create a Feature Branch
 git checkout -b feature/your-feature-name
@@ -86,6 +86,6 @@ Use JWT-based auth for player sessions
 
 Validate all input with class-validator
 
-🤝 Join the StarkMole Community
-StarkMole is more than just a game — it’s an experiment in decentralized fun. Contribute to smart contract-backed gaming where fairness, transparency, and rewards are all verifiable.
+🤝 Join the Proof-Stell Community
+Proof-Stell is more than just a game — it’s an experiment in decentralized fun. Contribute to smart contract-backed gaming where fairness, transparency, and rewards are all verifiable.
 

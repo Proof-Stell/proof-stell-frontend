@@ -1,118 +1,362 @@
-import React from "react";
-import { FaGamepad, FaCoins, FaTrophy, FaShieldAlt, FaUsers, FaWallet } from "react-icons/fa";
-import { motion } from "framer-motion";
+import React, { useRef, useState } from "react";
+import { motion, useInView } from "framer-motion";
 
 const features = [
   {
-    title: "Daily Challenges",
-    icon: <FaGamepad className="text-purple-400" size={28} />,
-    iconBg: "bg-purple-900",
+    id: "01",
+    title: "On-Chain Document Proofs",
+    tag: "CORE",
     description:
-      "Engage in daily Whack-a-Mole challenges that test your reflexes and strategic thinking. Each day brings new challenges with varying difficulty levels.",
+      "Institutions register documents by storing cryptographic hashes directly on Soroban smart contracts. Anyone can verify authenticity by comparing a file's hash with the immutable blockchain record.",
+    accent: "#00dc96",
   },
   {
-    title: "On-Chain Rewards",
-    icon: <FaCoins className="text-blue-400" size={28} />,
-    iconBg: "bg-blue-900",
+    id: "02",
+    title: "Institutional Issuers",
+    tag: "ISSUERS",
     description:
-      "Earn rewards for your performance in the form of digital assets and tokens. All rewards are recorded on the blockchain, ensuring transparency.",
+      "Verified institutions — universities, employers, NGOs — issue credentials directly to users' Stellar wallets. Certificates, employment letters, compliance approvals: all tamper-proof.",
+    accent: "#00dc96",
   },
   {
-    title: "Decentralized Leaderboards",
-    icon: <FaTrophy className="text-green-400" size={28} />,
-    iconBg: "bg-green-900",
+    id: "03",
+    title: "Wallet-Based Identity",
+    tag: "IDENTITY",
     description:
-      "Compete with players from around the world on decentralized leaderboards. Track your progress and see how you stack up against others in real-time.",
+      "No usernames. No passwords. Connect your Stellar wallet to receive credentials, share verifiable proofs, and manage all issued documents. Self-sovereign by design.",
+    accent: "#00dc96",
   },
   {
-    title: "Blockchain Security",
-    icon: <FaShieldAlt className="text-orange-400" size={28} />,
-    iconBg: "bg-orange-900",
+    id: "04",
+    title: "Instant Verification",
+    tag: "VERIFY",
     description:
-      "Enjoy the security and transparency of blockchain technology. All game data, scores, and rewards are secured on the StarkNet blockchain.",
+      "Upload a document — the platform hashes it, queries the Soroban contract, and returns a result in seconds. Valid, Not Found, or Revoked. No intermediary required.",
+    accent: "#00dc96",
   },
   {
-    title: "Community Features",
-    icon: <FaUsers className="text-red-400" size={28} />,
-    iconBg: "bg-red-900",
+    id: "05",
+    title: "Revocation Registry",
+    tag: "REGISTRY",
     description:
-      "Connect with other players through in-game social features. Share your achievements and compete for top spots on the global leaderboards.",
+      "Issuers can revoke credentials on-chain — fraudulent certificates, expired compliance docs, recalled licenses. Revocation state is permanently transparent and auditable.",
+    accent: "#00dc96",
   },
   {
-    title: "StarkNet Integration",
-    icon: <FaWallet className="text-indigo-400" size={28} />,
-    iconBg: "bg-indigo-900",
+    id: "06",
+    title: "Trustless Infrastructure",
+    tag: "PROTOCOL",
     description:
-      "Seamlessly connect your StarkNet wallet to play, earn, and track your rewards. Experience the future of gaming with blockchain technology.",
+      "Built entirely on Soroban smart contracts. No centralized databases, no trusted third parties. ProofStell anchors cryptographic proofs on Stellar — permanent and globally verifiable.",
+    accent: "#00dc96",
   },
 ];
 
-const cardVariants = {
-  offscreen: { opacity: 0, y: 40, scale: 0.95 },
-  onscreen: { opacity: 1, y: 0, scale: 1, transition: { type: "spring" as const, bounce: 0.25, duration: 0.7 } },
-};
+const FeatureCard = ({
+  feature,
+  index,
+}: {
+  feature: (typeof features)[0];
+  index: number;
+}) => {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const [hovered, setHovered] = useState(false);
 
-const iconVariants = {
-  initial: { rotate: -10, scale: 0.8 },
-  animate: { rotate: 0, scale: 1, transition: { type: "spring" as const, stiffness: 300, damping: 15 } },
-  hover: { scale: 1.15, rotate: 8, transition: { type: "spring" as const, stiffness: 300 } },
-};
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 32 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: "easeOut" }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: hovered ? "rgba(0,20,14,0.95)" : "rgba(0,12,8,0.6)",
+        border: `1px solid ${hovered ? "rgba(0,220,150,0.35)" : "rgba(0,220,150,0.1)"}`,
+        borderRadius: 3,
+        padding: "28px 28px 24px",
+        position: "relative",
+        overflow: "hidden",
+        cursor: "default",
+        transition: "all 0.3s ease",
+        boxShadow: hovered ? "0 8px 40px rgba(0,220,150,0.08)" : "none",
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+      }}
+    >
+      {/* Corner accent top-right */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          right: 0,
+          width: 40,
+          height: 40,
+          borderTop: `1.5px solid ${hovered ? "#00dc96" : "rgba(0,220,150,0.2)"}`,
+          borderRight: `1.5px solid ${hovered ? "#00dc96" : "rgba(0,220,150,0.2)"}`,
+          transition: "border-color 0.3s",
+        }}
+      />
 
-const FeaturesSection: React.FC = () => (
-  <section id="features" className="w-full bg-[#151821] py-16 px-4">
-    <div className="max-w-5xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        viewport={{ once: true }}
-        className="text-center mb-12"
-      >
-        <motion.h2
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-3xl md:text-4xl font-bold text-yellow-400 mb-2"
+      {/* Bottom glow on hover */}
+      {hovered && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 1,
+            background: "linear-gradient(90deg, transparent, #00dc96, transparent)",
+          }}
+        />
+      )}
+
+      {/* Header row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span
+          style={{
+            fontFamily: "'Space Mono', monospace",
+            fontSize: "0.62rem",
+            letterSpacing: "0.18em",
+            color: "#00dc96",
+            background: "rgba(0,220,150,0.08)",
+            border: "1px solid rgba(0,220,150,0.2)",
+            padding: "3px 10px",
+            borderRadius: 1,
+          }}
         >
-          Key Features
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-gray-300 text-lg"
+          {feature.tag}
+        </span>
+        <span
+          style={{
+            fontFamily: "'Space Mono', monospace",
+            fontSize: "0.65rem",
+            color: "rgba(0,220,150,0.25)",
+            letterSpacing: "0.05em",
+          }}
         >
-          Discover what makes StarkMole a unique StarkNet gaming experience.
-        </motion.p>
-      </motion.div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {features.map((feature, idx) => (
-          <motion.div
-            key={idx}
-            className="relative bg-[#23293a] rounded-2xl p-6 pt-8 shadow-lg border-b-4 border-yellow-400 flex flex-col min-h-[260px] transition-transform"
-            initial="offscreen"
-            whileInView="onscreen"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={cardVariants}
-            whileHover={{ scale: 1.03, boxShadow: "0 8px 32px 0 rgba(255, 221, 51, 0.10)" }}
-            transition={{ type: "spring", bounce: 0.25, duration: 0.7, delay: idx * 0.12 }}
-          >
-            <motion.div
-              className={`absolute -top-5 left-5 rounded-full p-2 ${feature.iconBg} shadow-md`}
-              variants={iconVariants}
-              initial="initial"
-              animate="animate"
-              whileHover="hover"
-            >
-              {feature.icon}
-            </motion.div>
-            <h3 className="mt-6 mb-2 text-xl font-bold text-white">{feature.title}</h3>
-            <p className="text-gray-300 text-base">{feature.description}</p>
-          </motion.div>
-        ))}
+          /{feature.id}
+        </span>
       </div>
-    </div>
-  </section>
-);
+
+      {/* Title */}
+      <h3
+        style={{
+          fontFamily: "'Space Mono', monospace",
+          fontSize: "0.95rem",
+          fontWeight: 700,
+          color: hovered ? "#e8f5f0" : "#a0c4b8",
+          margin: 0,
+          lineHeight: 1.35,
+          transition: "color 0.3s",
+          letterSpacing: "-0.01em",
+        }}
+      >
+        {feature.title}
+      </h3>
+
+      {/* Divider */}
+      <div
+        style={{
+          height: 1,
+          background: hovered
+            ? "linear-gradient(90deg, #00dc96, transparent)"
+            : "rgba(0,220,150,0.08)",
+          transition: "background 0.4s",
+        }}
+      />
+
+      {/* Description */}
+      <p
+        style={{
+          fontFamily: "'DM Mono', monospace",
+          fontSize: "0.78rem",
+          color: "#4a7060",
+          lineHeight: 1.75,
+          margin: 0,
+          transition: "color 0.3s",
+          ...(hovered ? { color: "#6a9a88" } : {}),
+        }}
+      >
+        {feature.description}
+      </p>
+    </motion.div>
+  );
+};
+
+const FeaturesSection: React.FC = () => {
+  const headerRef = useRef(null);
+  const headerInView = useInView(headerRef, { once: true });
+
+  return (
+    <section
+      id="features"
+      style={{
+        background: "#060a10",
+        padding: "96px 24px",
+        position: "relative",
+        fontFamily: "'DM Mono', monospace",
+      }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Mono:wght@400;500&display=swap');
+      `}</style>
+
+      {/* Grid bg */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: `
+            linear-gradient(rgba(0,220,150,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0,220,150,0.03) 1px, transparent 1px)
+          `,
+          backgroundSize: "48px 48px",
+          pointerEvents: "none",
+        }}
+      />
+
+      <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
+        {/* Section header */}
+        <motion.div
+          ref={headerRef}
+          initial={{ opacity: 0, y: 20 }}
+          animate={headerInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          style={{ marginBottom: 64 }}
+        >
+          {/* Label */}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 20,
+            }}
+          >
+            <div
+              style={{
+                width: 24,
+                height: 1,
+                background: "#00dc96",
+                boxShadow: "0 0 8px #00dc96",
+              }}
+            />
+            <span
+              style={{
+                fontFamily: "'Space Mono', monospace",
+                fontSize: "0.65rem",
+                letterSpacing: "0.2em",
+                color: "#00dc96",
+              }}
+            >
+              PLATFORM CAPABILITIES
+            </span>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+            <h2
+              style={{
+                fontFamily: "'Space Mono', monospace",
+                fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)",
+                fontWeight: 700,
+                color: "#e8f5f0",
+                margin: 0,
+                lineHeight: 1.15,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Cryptographic Trust,<br />
+              <span style={{ color: "#00dc96" }}>Without the Middleman.</span>
+            </h2>
+            <p
+              style={{
+                color: "#3a6050",
+                fontSize: "0.8rem",
+                maxWidth: 320,
+                lineHeight: 1.7,
+                margin: 0,
+              }}
+            >
+              Six core capabilities anchored on Stellar Soroban — from credential issuance to instant on-chain revocation.
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Feature grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(310px, 1fr))",
+            gap: 16,
+          }}
+        >
+          {features.map((f, i) => (
+            <FeatureCard key={f.id} feature={f} index={i} />
+          ))}
+        </div>
+
+        {/* Bottom stat strip */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          style={{
+            marginTop: 56,
+            display: "flex",
+            gap: 1,
+            flexWrap: "wrap",
+          }}
+        >
+          {[
+            { label: "Contracts Deployed", value: "4" },
+            { label: "Avg Verify Time", value: "<3s" },
+            { label: "Trust Model", value: "Zero" },
+            { label: "Network", value: "Stellar" },
+          ].map((s, i) => (
+            <div
+              key={s.label}
+              style={{
+                flex: "1 1 160px",
+                padding: "20px 24px",
+                border: "1px solid rgba(0,220,150,0.1)",
+                background: "rgba(0,12,8,0.4)",
+                ...(i === 0 ? { borderRadius: "3px 0 0 3px" } : {}),
+                ...(i === 3 ? { borderRadius: "0 3px 3px 0" } : {}),
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'Space Mono', monospace",
+                  fontSize: "1.4rem",
+                  fontWeight: 700,
+                  color: "#e8f5f0",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {s.value}
+              </div>
+              <div
+                style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: "0.65rem",
+                  color: "#3a6050",
+                  letterSpacing: "0.1em",
+                  marginTop: 4,
+                }}
+              >
+                {s.label.toUpperCase()}
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+};
 
 export default FeaturesSection;

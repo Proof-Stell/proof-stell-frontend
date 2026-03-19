@@ -1,359 +1,434 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Star} from 'lucide-react';
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Testimonial {
   id: string;
-  rating: number;
   quote: string;
-  username: string;
-  level: number;
-  avatar: string;
+  name: string;
+  role: string;
+  org: string;
+  type: "issuer" | "verifier" | "user";
+  hash: string;
+  txBlock: string;
 }
 
-interface TestimonialCardProps {
-  testimonial: Testimonial;
-}
-
-// Sample testimonials data - DEFINED OUTSIDE COMPONENT to prevent re-creation
-const testimonialsData: Testimonial[] = [
+const testimonials: Testimonial[] = [
   {
-    id: '1',
-    rating: 5,
-    quote: "StarkMole combines the nostalgic fun of Whack-a-Mole with cutting edge blockchain technology. I love earning rewards while having fun!",
-    username: "CryptoGamer",
-    level: 17,
-    avatar: "👨‍💻"
+    id: "0x3f8a",
+    quote:
+      "We issue hundreds of certificates a month. ProofStell eliminated fraud inquiries entirely — every employer can verify directly on-chain without calling us.",
+    name: "Dr. Amara Osei",
+    role: "Registrar",
+    org: "University of Accra",
+    type: "issuer",
+    hash: "3f8a...c92d",
+    txBlock: "#9,841,002",
   },
   {
-    id: '2',
-    rating: 5,
-    quote: "The daily challenges keep me coming back every day. It's addictive knowing that my scores are permanently recorded on the blockchain!",
-    username: "BlockchainBabe",
-    level: 15,
-    avatar: "👩‍🦰"
+    id: "0x7b2c",
+    quote:
+      "I verified a candidate's engineering certificate in under three seconds. No email chains, no PDF forgeries. This is how hiring should work.",
+    name: "Kenji Watanabe",
+    role: "Head of Engineering",
+    org: "Meridian Labs",
+    type: "verifier",
+    hash: "7b2c...f14a",
+    txBlock: "#9,843,551",
   },
   {
-    id: '3',
-    rating: 5,
-    quote: "I've been playing games for years, but StarkMole is the first one where I actually own my achievements and rewards. The StarkNet integration is seamless!",
-    username: "TokenKing",
-    level: 20,
-    avatar: "👑"
+    id: "0x1d9e",
+    quote:
+      "My credentials live in my Stellar wallet. I share a proof link with anyone who needs verification — no waiting, no middlemen, no data leaks.",
+    name: "Fatima Al-Rashid",
+    role: "Compliance Officer",
+    org: "Independent",
+    type: "user",
+    hash: "1d9e...a87b",
+    txBlock: "#9,845,790",
   },
   {
-    id: '4',
-    rating: 5,
-    quote: "Amazing gameplay combined with real rewards. The community is fantastic and the leaderboard competition keeps things exciting!",
-    username: "MoleHunter",
-    level: 12,
-    avatar: "🎯"
+    id: "0xc41f",
+    quote:
+      "We revoked an expired certification on-chain in one transaction. The status updated globally, instantly. Our legal team was impressed.",
+    name: "Priya Menon",
+    role: "Director of Ops",
+    org: "NovaCert Authority",
+    type: "issuer",
+    hash: "c41f...0e3d",
+    txBlock: "#9,846,120",
   },
   {
-    id: '5',
-    rating: 5,
-    quote: "Finally, a game that respects my time and skills. Every session feels rewarding, and the NFT achievements are so cool!",
-    username: "DigitalNinja",
-    level: 25,
-    avatar: "🥷"
-  }
+    id: "0x9a3b",
+    quote:
+      "Auditing compliance documents used to take days. With ProofStell's on-chain revocation registry, I can check any credential's status in real time.",
+    name: "Marcus Eze",
+    role: "Lead Auditor",
+    org: "TrustFrame Partners",
+    type: "verifier",
+    hash: "9a3b...d25c",
+    txBlock: "#9,847,019",
+  },
 ];
 
-// TestimonialCard component - Clean scale hover on entire card
-const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => {
-  // Safety check
-  if (!testimonial) {
-    return null;
-  }
+const TYPE_LABELS: Record<Testimonial["type"], string> = {
+  issuer: "CREDENTIAL ISSUER",
+  verifier: "THIRD-PARTY VERIFIER",
+  user: "WALLET HOLDER",
+};
 
-  const { rating, quote, username, level, avatar } = testimonial;
+const TYPE_COLORS: Record<Testimonial["type"], string> = {
+  issuer: "#00dc96",
+  verifier: "#38bdf8",
+  user: "#a78bfa",
+};
+
+const TestimonialCard = ({
+  testimonial,
+  isCenter,
+}: {
+  testimonial: Testimonial;
+  isCenter: boolean;
+}) => {
+  const color = TYPE_COLORS[testimonial.type];
 
   return (
     <motion.div
-      className="relative transform transition-transform duration-300 hover:scale-105"
-      layoutId={`testimonial-${testimonial.id}`}
-      initial={{ opacity: 0, scale: 0.9 }}
+      initial={{ opacity: 0, scale: 0.92 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
+      exit={{ opacity: 0, scale: 0.88 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      style={{
+        background: isCenter ? "rgba(0,18,12,0.95)" : "rgba(0,10,6,0.5)",
+        border: `1px solid ${isCenter ? `${color}55` : "rgba(0,220,150,0.08)"}`,
+        borderRadius: 3,
+        padding: isCenter ? "32px" : "24px",
+        position: "relative",
+        overflow: "hidden",
+        transition: "all 0.4s",
+        opacity: isCenter ? 1 : 0.45,
+        transform: isCenter ? "scale(1)" : "scale(0.95)",
+        boxShadow: isCenter ? `0 0 40px ${color}14` : "none",
+        display: "flex",
+        flexDirection: "column",
+        gap: 20,
+        minHeight: 280,
+        fontFamily: "'DM Mono', monospace",
+      }}
     >
-      {/* Main card container */}
-      <div className="bg-gradient-to-br from-gray-800/90 to-gray-900/95 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4 md:p-6 h-full flex flex-col">
-        
-        {/* Star rating at the top */}
-        <motion.div 
-          className="flex space-x-1 mb-3 md:mb-4"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          {Array.from({ length: 5 }, (_, index) => (
-            <motion.div
-              key={index}
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ 
-                delay: 0.1 + (index * 0.05),
-                type: "spring",
-                stiffness: 200
-              }}
-            >
-              <Star
-                className={`w-4 h-4 md:w-5 md:h-5 ${
-                  index < rating
-                    ? 'text-yellow-400 fill-yellow-400'
-                    : 'text-gray-600'
-                }`}
-              />
-            </motion.div>
-          ))}
-        </motion.div>
+      {/* Top accent line */}
+      {isCenter && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 2,
+            background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
+          }}
+        />
+      )}
 
-        {/* Quote text - main content */}
-        <motion.blockquote
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-gray-200 text-xs md:text-sm leading-relaxed mb-4 md:mb-6 flex-grow italic"
+      {/* Type badge + block */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span
+          style={{
+            fontSize: "0.6rem",
+            letterSpacing: "0.15em",
+            color,
+            background: `${color}12`,
+            border: `1px solid ${color}30`,
+            padding: "3px 10px",
+            borderRadius: 1,
+            fontFamily: "'Space Mono', monospace",
+          }}
         >
-          `{quote}`
-        </motion.blockquote>
+          {TYPE_LABELS[testimonial.type]}
+        </span>
+        <span
+          style={{
+            fontSize: "0.6rem",
+            color: "rgba(255,255,255,0.15)",
+            fontFamily: "'DM Mono', monospace",
+          }}
+        >
+          {testimonial.txBlock}
+        </span>
+      </div>
 
-        {/* User info section at the bottom */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="flex items-center space-x-3"
+      {/* Quote */}
+      <blockquote
+        style={{
+          margin: 0,
+          fontSize: "0.82rem",
+          lineHeight: 1.8,
+          color: isCenter ? "#b0d8c8" : "#3a5a50",
+          fontStyle: "italic",
+          flex: 1,
+          transition: "color 0.3s",
+        }}
+      >
+        &ldquo;{testimonial.quote}&rdquo;
+      </blockquote>
+
+      {/* User */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          paddingTop: 16,
+          borderTop: "1px solid rgba(0,220,150,0.08)",
+        }}
+      >
+        {/* Avatar block */}
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            border: `1px solid ${isCenter ? `${color}60` : "rgba(0,220,150,0.1)"}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            background: isCenter ? `${color}10` : "transparent",
+          }}
         >
-          {/* Avatar */}
-          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-lg md:text-xl text-white font-semibold">
-            {avatar}
+          <span style={{ color, fontSize: "0.65rem", fontFamily: "'Space Mono', monospace", fontWeight: 700 }}>
+            {testimonial.name.split(" ").map((n) => n[0]).join("")}
+          </span>
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              color: isCenter ? "#e8f5f0" : "#3a5a50",
+              fontFamily: "'Space Mono', monospace",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {testimonial.name}
           </div>
-
-          {/* User details */}
-          <div className="flex-1">
-            <h4 className="font-semibold text-white text-xs md:text-sm">
-              {username}
-            </h4>
-            <p className="text-gray-400 text-xs">
-              Level {level} Player
-            </p>
+          <div style={{ fontSize: "0.62rem", color: "#3a5a50", marginTop: 1 }}>
+            {testimonial.role} · {testimonial.org}
           </div>
-        </motion.div>
+        </div>
+
+        {/* Hash */}
+        <div
+          style={{
+            fontSize: "0.58rem",
+            color: "rgba(0,220,150,0.2)",
+            fontFamily: "'DM Mono', monospace",
+            flexShrink: 0,
+          }}
+        >
+          {testimonial.hash}
+        </div>
       </div>
     </motion.div>
   );
 };
 
 const TestimonialsSection: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [cardsPerView, setCardsPerView] = useState(3);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  
+  const [current, setCurrent] = useState(0);
+  const [autoPlay, setAutoPlay] = useState(true);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const headerRef = useRef(null);
+
+  const total = testimonials.length;
 
   useEffect(() => {
-    const updateCardsPerView = () => {
-      if (window.innerWidth < 768) {
-        setCardsPerView(1);
-      } else if (window.innerWidth < 1024) {
-        setCardsPerView(2);
-      } else {
-        setCardsPerView(3);
-      }
-    };
+    if (!autoPlay) return;
+    intervalRef.current = setInterval(() => {
+      setCurrent((c) => (c + 1) % total);
+    }, 4500);
+    return () => clearInterval(intervalRef.current!);
+  }, [autoPlay, total]);
 
-    updateCardsPerView();
-    window.addEventListener('resize', updateCardsPerView);
-    return () => window.removeEventListener('resize', updateCardsPerView);
-  }, []);
-
-  // Auto-play functionality
-  useEffect(() => {
-    if (isAutoPlaying) {
-      intervalRef.current = setInterval(() => {
-        setCurrentIndex((prev) => 
-          prev + cardsPerView >= testimonialsData.length ? 0 : prev + 1
-        );
-      }, 4000);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [isAutoPlaying, cardsPerView]);
-
-  const maxIndex = Math.max(0, testimonialsData.length - cardsPerView);
-
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+  const prev = () => {
+    setCurrent((c) => (c - 1 + total) % total);
   };
 
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
+  const next = () => {
+    setCurrent((c) => (c + 1) % total);
   };
 
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-  };
-
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const threshold = 50;
-    if (info.offset.x > threshold) {
-      goToPrevious();
-    } else if (info.offset.x < -threshold) {
-      goToNext();
-    }
-  };
-
-  const handleMouseEnter = () => setIsAutoPlaying(false);
-  const handleMouseLeave = () => setIsAutoPlaying(true);
-
-
-  const visibleTestimonials = [];
-  for (let i = 0; i < cardsPerView; i++) {
-    const index = (currentIndex + i) % testimonialsData.length;
-    visibleTestimonials.push(testimonialsData[index]);
-  }
+  // Show 3 cards: left, center (active), right
+  const getIdx = (offset: number) => (current + offset + total) % total;
 
   return (
-    <section className="py-8 md:py-16 px-4 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center">
-      <div className="max-w-7xl mx-auto w-full">
+    <section
+      id="testimonials"
+      style={{
+        background: "#060a10",
+        borderTop: "1px solid rgba(0,220,150,0.08)",
+        padding: "96px 24px",
+        position: "relative",
+        overflow: "hidden",
+        fontFamily: "'DM Mono', monospace",
+      }}
+      onMouseEnter={() => setAutoPlay(false)}
+      onMouseLeave={() => setAutoPlay(true)}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Mono:wght@400;500&display=swap');
+      `}</style>
 
+      {/* Radial glow */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-20%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "60vw",
+          height: "50vh",
+          background: "radial-gradient(ellipse, rgba(0,220,150,0.05) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
+        {/* Header */}
         <motion.div
+          ref={headerRef}
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-8 md:mb-12"
+          style={{ marginBottom: 64, display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}
         >
-          <motion.h2 
-            className="text-3xl md:text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 mb-4"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            What Players Say
-          </motion.h2>
-          <motion.p 
-            className="text-base md:text-lg text-gray-300 max-w-2xl mx-auto px-4"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            Hear from our community of players about their StarkMole experience.
-          </motion.p>
+          <div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
+              <div style={{ width: 24, height: 1, background: "#00dc96", boxShadow: "0 0 8px #00dc96" }} />
+              <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", letterSpacing: "0.2em", color: "#00dc96" }}>
+                VERIFIED TESTIMONIALS
+              </span>
+            </div>
+            <h2
+              style={{
+                fontFamily: "'Space Mono', monospace",
+                fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)",
+                fontWeight: 700,
+                color: "#e8f5f0",
+                margin: 0,
+                lineHeight: 1.15,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Trust, From Both<br />
+              <span style={{ color: "#00dc96" }}>Sides of the Chain.</span>
+            </h2>
+          </div>
+
+          {/* Nav controls */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              onClick={prev}
+              style={{
+                width: 40,
+                height: 40,
+                border: "1px solid rgba(0,220,150,0.2)",
+                background: "transparent",
+                color: "#00dc96",
+                borderRadius: 2,
+                cursor: "pointer",
+                fontFamily: "'Space Mono', monospace",
+                fontSize: "1rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,220,150,0.08)";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "#00dc96";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(0,220,150,0.2)";
+              }}
+            >
+              ←
+            </button>
+            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "#3a6050", padding: "0 8px" }}>
+              {String(current + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
+            </span>
+            <button
+              onClick={next}
+              style={{
+                width: 40,
+                height: 40,
+                border: "1px solid rgba(0,220,150,0.2)",
+                background: "transparent",
+                color: "#00dc96",
+                borderRadius: 2,
+                cursor: "pointer",
+                fontFamily: "'Space Mono', monospace",
+                fontSize: "1rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,220,150,0.08)";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "#00dc96";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(0,220,150,0.2)";
+              }}
+            >
+              →
+            </button>
+          </div>
         </motion.div>
 
-
-        <div 
-          className="relative"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+        {/* Cards */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1.15fr 1fr",
+            gap: 16,
+            alignItems: "stretch",
+          }}
         >
-       
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={goToPrevious}
-            className="absolute -left-2   xl:-left-0 2xl:-left-16 2xl:top-1/2 top-1/1 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-2 md:p-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-            aria-label="Previous testimonial"
-          >
-            <ChevronLeft className="w-4 h-4 md:w-6 md:h-6 text-white" />
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={goToNext}
-            className="absolute -right-2 xl:-right-0 2xl:-right-16 2xl:top-1/2 top-1/1 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full p-2 md:p-3 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-            aria-label="Next testimonial"
-          >
-            <ChevronRight className="w-4 h-4 md:w-6 md:h-6 text-white" />
-          </motion.button>
-
-          {/* Testimonials Grid */}
-          <motion.div
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.1}
-            onDragEnd={handleDragEnd}
-            className="cursor-grab active:cursor-grabbing"
-          >
-            <motion.div
-              className={`grid gap-4 md:gap-6 ${
-                cardsPerView === 1 
-                  ? 'grid-cols-1' 
-                  : cardsPerView === 2 
-                  ? 'grid-cols-1 md:grid-cols-2' 
-                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
-              }`}
-              layout
-            >
-              <AnimatePresence mode="popLayout">
-                {visibleTestimonials.map((testimonial, index) => (
-                  <motion.div
-                    key={`${testimonial.id}-${currentIndex}-${index}`}
-                    initial={{ 
-                      opacity: 0, 
-                      scale: 0.8, 
-                      y: 50,
-                      rotateY: -90 
-                    }}
-                    animate={{ 
-                      opacity: 1, 
-                      scale: 1, 
-                      y: 0,
-                      rotateY: 0 
-                    }}
-                    exit={{ 
-                      opacity: 0, 
-                      scale: 0.8, 
-                      y: -50,
-                      rotateY: 90 
-                    }}
-                    transition={{ 
-                      duration: 0.6, 
-                      delay: index * 0.1,
-                      type: "spring",
-                      stiffness: 100
-                    }}
-                    whileInView={{ 
-                      opacity: 1, 
-                      y: 0 
-                    }}
-                    viewport={{ once: true, amount: 0.3 }}
-                  >
-                    <TestimonialCard testimonial={testimonial} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
-          </motion.div>
-
-          {/* Pagination Dots */}
-          <motion.div 
-            className="flex justify-center mt-6 md:mt-8 space-x-2"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-          >
-            {Array.from({ length: maxIndex + 1 }, (_, index) => (
-              <motion.button
-                key={index}
-                onClick={() => goToSlide(index)}
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 0.9 }}
-                className={`w-2 h-2 md:w-3 md:h-3 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 ${
-                  currentIndex === index
-                    ? 'bg-cyan-400 scale-125'
-                    : 'bg-white/30 hover:bg-white/50'
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
+          <AnimatePresence mode="popLayout">
+            {[-1, 0, 1].map((offset) => (
+              <TestimonialCard
+                key={`${getIdx(offset)}-${offset}`}
+                testimonial={testimonials[getIdx(offset)]}
+                isCenter={offset === 0}
               />
             ))}
-          </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Progress dots */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 40 }}>
+          {testimonials.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              style={{
+                width: i === current ? 24 : 6,
+                height: 6,
+                borderRadius: 3,
+                border: "none",
+                background: i === current ? "#00dc96" : "rgba(0,220,150,0.15)",
+                cursor: "pointer",
+                transition: "all 0.3s",
+                padding: 0,
+                boxShadow: i === current ? "0 0 8px #00dc96" : "none",
+              }}
+            />
+          ))}
         </div>
       </div>
     </section>

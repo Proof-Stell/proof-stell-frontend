@@ -181,8 +181,9 @@ export function LeaderboardSection() {
 
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setPlayers(mockPlayers);
-      } catch (err) {
+      } catch (error) {
         setError("Failed to load leaderboard data");
+        console.error("Error fetching leaderboard:", error);
       } finally {
         setLoading(false);
       }

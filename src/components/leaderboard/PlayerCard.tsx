@@ -75,7 +75,7 @@ export function PlayerCard({ player, index }: PlayerCardProps) {
     ? player.previousRank - player.rank
     : 0;
   const isRankUp = rankChange > 0;
-  const isRankDown = rankChange < 0;
+  // const isRankDown = rankChange < 0;
 
   return (
     <motion.div
