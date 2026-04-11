@@ -1,175 +1,127 @@
-ProofStell Frontend 🌐
+# 🌐 ProofStell Frontend
 
-Decentralized Document Verification & Credential Registry on Stellar Soroban
-
-ProofStell is a decentralized platform built on Soroban smart contracts that allows institutions, organizations, and individuals to issue, verify, and manage tamper-proof digital credentials and documents.
-
-Instead of trusting centralized databases, ProofDesk anchors cryptographic proofs of documents on-chain, ensuring authenticity, permanence, and global verifiability.
-
-From academic certificates to employment records and compliance documents, ProofDesk creates a trustless verification infrastructure powered by Stellar
 User interface for the ProofStell decentralized document verification platform.
 
-🚀 Key Features
-📄 On-Chain Document Proofs
+---
 
-Institutions can register documents by storing cryptographic hashes on-chain via Soroban smart contracts.
+## 🌍 Overview
 
-Anyone can verify a document’s authenticity by comparing its hash with the blockchain record.
+The **ProofStell Frontend** provides a clean and intuitive interface for users, institutions, and third parties to:
 
-🏫 Institutional Issuers
+* Upload and verify documents
+* View issued credentials
+* Issue new credentials (for authorized issuers)
+* Connect Stellar wallets
 
-Verified institutions (schools, companies, NGOs) can issue credentials directly to users’ wallets.
+It acts as the entry point into the ProofStell ecosystem.
 
-Examples:
+---
 
-University certificates
+## 🚀 Features
 
-Employment letters
+### 📄 Document Verification
 
-Training certifications
+* Upload a document
+* Automatically generate hash
+* Check authenticity on-chain
 
-Compliance approvals
+---
 
-🔐 Wallet-Based Identity
+### 📊 Credential Dashboard
 
-Users connect their Stellar wallets to:
+* View all credentials linked to a wallet
+* Track issued and received documents
 
-Receive credentials
+---
 
-Share verifiable proofs
+### 🏫 Issuer Portal
 
-Manage issued documents
+* Institutions can issue credentials
+* Assign documents to user wallets
 
-No usernames or passwords required.
+---
 
-🔎 Instant Verification
+### 🔐 Wallet Authentication
 
-Third parties can verify documents in seconds:
+* Connect using Stellar wallets (e.g. Freighter)
+* No usernames or passwords required
 
-Upload the document
+---
 
-Platform hashes the file
+## 🛠️ Tech Stack
 
-Hash is matched with the blockchain record
+* Next.js
+* TailwindCSS
+* ShadCN UI
+* Stellar Wallet Kit
 
-Result: Valid / Not Found / Revoked
+---
 
-🧾 Revocation Registry
+## 📁 Project Structure
 
-Issuers can revoke credentials if necessary.
+```bash
+src/
+├── app/
+│   ├── dashboard/
+│   ├── verify/
+│   ├── issuer/
+│   └── documents/
+├── components/
+├── hooks/
+├── lib/
+└── ui/
+```
 
-Example cases:
+---
 
-Fraudulent certificates
+## ⚙️ How It Works
 
-Expired compliance documents
+1. User uploads a document
+2. Frontend hashes the file
+3. Sends hash to backend
+4. Backend queries smart contract
+5. Result displayed to user
 
-Recalled licenses
+---
 
-The revocation state is stored on-chain for full transparency.
+## 🚀 Getting Started
 
-The frontend enables users, institutions, and third parties to interact with the ProofStell ecosystem.
+### Install dependencies
 
-Users can:
-
-• Upload documents
-• Verify document authenticity
-• View issued credentials
-• Connect Stellar wallets
-
-Overview
-
-ProofStell allows anyone to verify documents in seconds.
-
-Instead of trusting centralized databases, ProofStell anchors document hashes on the Stellar blockchain using Soroban smart contracts.
-
-The frontend provides a simple interface to interact with this decentralized infrastructure.
-
-Features
-
-Document Verification
-
-Upload a document to verify whether it has been registered on-chain.
-
-Credential Dashboard
-
-Users can view all credentials issued to their wallet.
-
-Issuer Portal
-
-Organizations can issue credentials to users.
-
-Wallet Authentication
-
-Users connect using Stellar wallets.
-
-Tech Stack
-
-Framework
-Next.js
-
-Styling
-TailwindCSS
-
-UI Components
-ShadCN UI
-
-Blockchain
-Soroban RPC
-
-Wallet Integration
-Stellar Wallet Kit
-
-Folder Structure
-src
-│
-├── app
-│   ├── dashboard
-│   ├── verify
-│   ├── issuer
-│   └── documents
-│
-├── components
-│
-├── hooks
-│
-├── lib
-│
-├── ui
-│
-└── styles
-How Verification Works
-
-1 User uploads document
-
-2 Frontend hashes the file
-
-3 Hash is sent to backend
-
-4 Backend queries Soroban contract
-
-5 Result is returned to user
-
-Running the Frontend
-
-Install dependencies
-
+```bash
 npm install
+```
 
-Start development server
+### Run development server
 
+```bash
 npm run dev
+```
 
-Open
+### Open in browser
 
+```
 http://localhost:3000
-Environment Variables
+```
+
+---
+
+## 🔐 Environment Variables
+
+```env
 NEXT_PUBLIC_API_URL=
 NEXT_PUBLIC_SOROBAN_RPC=
-Future Improvements
+NEXT_PUBLIC_STELLAR_NETWORK=testnet
+```
 
-• Mobile responsive UI
-• Credential sharing links
-• Public verification explorer
-• QR-based document verification
-• Issuer dashboards
+---
+
+## 🎯 Goals
+
+* Provide simple UX for blockchain verification
+* Enable non-technical users to interact with Web3
+* Make document verification fast and intuitive
+
+---
+
+**ProofStell Frontend — Simple access to decentralized verification.**
