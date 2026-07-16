@@ -3,6 +3,7 @@
 import Link from "next/link";
 import React, { useCallback, useState } from "react";
 import { useEventListener } from "../../hooks/useEventListener";
+import { useWallet } from "../providers";
 import styles from "./Navbar.module.css";
 
 interface NavbarProps {
@@ -20,12 +21,16 @@ export function Navbar({ onLoginClick }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<string>("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const { status, error } = useWallet();
 
   const handleScroll = useCallback(() => {
+    // Guard against server-side or pre-mount invocation
+    if (typeof window === "undefined") return;
     setScrolled(window.scrollY > 20);
 
     const sections = ["verify", "credentials", "issuers", "how-it-works"];
     for (const id of sections) {
+      if (typeof document === "undefined") continue;
       const el = document.getElementById(id);
       if (el) {
         const rect = el.getBoundingClientRect();
@@ -39,6 +44,24 @@ export function Navbar({ onLoginClick }: NavbarProps) {
   }, []);
 
   useEventListener("scroll", handleScroll);
+
+  /** Derive CTA label from wallet context state */
+  const ctaLabel =
+    status === "loading"
+      ? "CONNECTING…"
+      : status === "connected"
+      ? "WALLET CONNECTED"
+      : status === "error"
+      ? "WALLET UNAVAILABLE"
+      : "CONNECT WALLET";
+
+  const ctaTitle =
+    status === "error" && error ? error.message : undefined;
+
+  const handleConnectClick = () => {
+    if (status === "connected") return; // already connected, no-op
+    onLoginClick();
+  };
 
   return (
     <>
@@ -87,15 +110,22 @@ export function Navbar({ onLoginClick }: NavbarProps) {
             })}
           </ul>
 
-          {/* CTA */}
+          {/* CTA — reflects wallet connection state */}
           <div className={styles.navCta}>
-            <button className={styles.btnConnect} onClick={onLoginClick}>
+            <button
+              id="navbar-connect-wallet-btn"
+              className={styles.btnConnect}
+              onClick={handleConnectClick}
+              disabled={status === "loading"}
+              title={ctaTitle}
+              aria-label={ctaLabel}
+            >
               <div className={styles.walletDot} />
-              CONNECT WALLET
+              {ctaLabel}
             </button>
           </div>
 
-          {/* Mobile */}
+          {/* Mobile hamburger */}
           <button
             className={styles.mobileMenuBtn}
             onClick={() => setMenuOpen((o) => !o)}
@@ -118,13 +148,24 @@ export function Navbar({ onLoginClick }: NavbarProps) {
             </Link>
           ))}
           <button
+            id="mobile-connect-wallet-btn"
             className={styles.btnConnect}
             style={{ marginTop: 12, width: "100%", justifyContent: "center" }}
-            onClick={() => { onLoginClick(); setMenuOpen(false); }}
+            onClick={() => { handleConnectClick(); setMenuOpen(false); }}
+            disabled={status === "loading"}
+            title={ctaTitle}
+            aria-label={ctaLabel}
           >
             <div className={styles.walletDot} />
-            CONNECT WALLET
+            {ctaLabel}
           </button>
+
+          {/* Inline error message for mobile users */}
+          {status === "error" && error && (
+            <p style={{ color: "#ff6b6b", fontSize: 12, marginTop: 8, padding: "0 4px" }}>
+              ⚠ {error.message}
+            </p>
+          )}
         </div>
       </header>
     </>
