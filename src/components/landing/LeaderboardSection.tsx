@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { PlayerCard } from "../leaderboard/PlayerCard";
+import { mockPlayers } from "@/lib/mockData";
+import { env } from "@/config/environment";
 
 interface Player {
   id: string;
@@ -181,6 +183,17 @@ export function LeaderboardSection() {
         setLoading(true);
         await new Promise((resolve) => setTimeout(resolve, 1500));
         setPlayers(mockPlayers);
+
+        if (env.NEXT_PUBLIC_ENABLE_MOCK_DATA) {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          setPlayers(mockPlayers);
+        } else {
+          // Replace with real API call
+          // const res = await fetch('/api/leaderboard');
+          // const data = await res.json();
+          // setPlayers(data);
+          throw new Error("API not implemented yet");
+        }
       } catch (error) {
         setError("Failed to load leaderboard data");
         console.error("Error fetching leaderboard:", error);
