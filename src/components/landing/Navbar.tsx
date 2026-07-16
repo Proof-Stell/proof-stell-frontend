@@ -24,7 +24,6 @@ export function Navbar({ onLoginClick }: NavbarProps) {
   const { status, error } = useWallet();
 
   const handleScroll = useCallback(() => {
-    // Guard against server-side or pre-mount invocation
     if (typeof window === "undefined") return;
     setScrolled(window.scrollY > 20);
 
@@ -45,7 +44,6 @@ export function Navbar({ onLoginClick }: NavbarProps) {
 
   useEventListener("scroll", handleScroll);
 
-  /** Derive CTA label from wallet context state */
   const ctaLabel =
     status === "loading"
       ? "CONNECTING…"
@@ -59,7 +57,7 @@ export function Navbar({ onLoginClick }: NavbarProps) {
     status === "error" && error ? error.message : undefined;
 
   const handleConnectClick = () => {
-    if (status === "connected") return; // already connected, no-op
+    if (status === "connected") return;
     onLoginClick();
   };
 
@@ -67,25 +65,25 @@ export function Navbar({ onLoginClick }: NavbarProps) {
     <>
       <header className={`${styles.proofstellNav} ${scrolled ? styles.scrolled : styles.top}`}>
         {/* Status ticker */}
-        <div className={styles.statusBar}>
+        <div className={styles.statusBar} role="status" aria-label="Network Status Bar">
           <div className={styles.statusItem}>
-            <div className={styles.statusDot} />
+            <div className={styles.statusDot} aria-hidden="true" />
             STELLAR NETWORK LIVE
           </div>
           <div className={styles.statusItem}>
-            <div className={styles.statusDot} />
+            <div className={styles.statusDot} aria-hidden="true" />
             SOROBAN RPC · CONNECTED
           </div>
           <div className={styles.statusItem}>
-            <div className={styles.statusDot} />
+            <div className={styles.statusDot} aria-hidden="true" />
             BLOCK #9,847,201
           </div>
         </div>
 
-        <div className={styles.navInner}>
+        <nav className={styles.navInner} aria-label="Main Navigation">
           {/* Logo */}
-          <Link href="/" className={styles.navLogo}>
-            <div className={styles.logoMark}>
+          <Link href="/" className={styles.navLogo} aria-label="ProofStell Home">
+            <div className={styles.logoMark} aria-hidden="true">
               <div className={styles.logoMarkInner} />
             </div>
             <span className={styles.logoText}>
@@ -97,11 +95,13 @@ export function Navbar({ onLoginClick }: NavbarProps) {
           <ul className={styles.navLinks}>
             {NAV_LINKS.map((link) => {
               const id = link.href.replace("/#", "");
+              const isActive = activeSection === id;
               return (
                 <li key={link.label}>
                   <Link
                     href={link.href}
-                    className={`${styles.navLink} ${activeSection === id ? styles.active : ""}`}
+                    className={`${styles.navLink} ${isActive ? styles.active : ""}`}
+                    aria-current={isActive ? "page" : undefined}
                   >
                     {link.label.toUpperCase()}
                   </Link>
@@ -110,7 +110,7 @@ export function Navbar({ onLoginClick }: NavbarProps) {
             })}
           </ul>
 
-          {/* CTA — reflects wallet connection state */}
+          {/* CTA */}
           <div className={styles.navCta}>
             <button
               id="navbar-connect-wallet-btn"
@@ -120,23 +120,29 @@ export function Navbar({ onLoginClick }: NavbarProps) {
               title={ctaTitle}
               aria-label={ctaLabel}
             >
-              <div className={styles.walletDot} />
+              <div className={styles.walletDot} aria-hidden="true" />
               {ctaLabel}
             </button>
           </div>
 
-          {/* Mobile hamburger */}
+          {/* Mobile hamburger button */}
           <button
             className={styles.mobileMenuBtn}
             onClick={() => setMenuOpen((o) => !o)}
-            aria-label="Toggle menu"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
           >
             {menuOpen ? "✕" : "☰"}
           </button>
-        </div>
+        </nav>
 
         {/* Mobile menu */}
-        <div className={`${styles.mobileMenu} ${menuOpen ? styles.open : ""}`}>
+        <div 
+          id="mobile-menu"
+          className={`${styles.mobileMenu} ${menuOpen ? styles.open : ""}`}
+          aria-hidden={!menuOpen}
+        >
           {NAV_LINKS.map((link) => (
             <Link
               key={link.label}
@@ -156,13 +162,12 @@ export function Navbar({ onLoginClick }: NavbarProps) {
             title={ctaTitle}
             aria-label={ctaLabel}
           >
-            <div className={styles.walletDot} />
+            <div className={styles.walletDot} aria-hidden="true" />
             {ctaLabel}
           </button>
 
-          {/* Inline error message for mobile users */}
           {status === "error" && error && (
-            <p style={{ color: "#ff6b6b", fontSize: 12, marginTop: 8, padding: "0 4px" }}>
+            <p style={{ color: "#ff6b6b", fontSize: 12, marginTop: 8, padding: "0 4px" }} role="alert">
               ⚠ {error.message}
             </p>
           )}
