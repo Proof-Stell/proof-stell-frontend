@@ -4,7 +4,7 @@ import { getConfiguredProviders, connectToProvider } from "../lib/wallet";
 // Context value describing wallet state
 export interface WalletContextValue {
   status: "idle" | "loading" | "connected" | "error";
-  provider?: any;
+  provider?: unknown;
   error?: Error;
 }
 
@@ -25,7 +25,7 @@ interface ProvidersProps {
  */
 export function Providers({ children }: ProvidersProps) {
   const [status, setStatus] = useState<WalletContextValue["status"]>("idle");
-  const [provider, setProvider] = useState<any>(null);
+  const [provider, setProvider] = useState<unknown>(null);
   const [error, setError] = useState<Error | undefined>(undefined);
 
   useEffect(() => {
@@ -57,6 +57,3 @@ export function Providers({ children }: ProvidersProps) {
     </WalletContext.Provider>
   );
 }
-
-
-

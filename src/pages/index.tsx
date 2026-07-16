@@ -4,6 +4,8 @@ import { Navbar } from "@/components/landing/Navbar";
 import { useRouter } from "next/router";
 import TestimonialsSection from "../components/landing/TestimonialsSection";
 import FeaturesSection from "../components/landing/FeaturesSection";
+import HowItWorksSection from "../components/landing/HowItWorksSection";
+import Footer from "../components/landing/Footer";
 import { useWallet } from "@/components/providers";
 
 export default function Home() {
@@ -36,8 +38,10 @@ export default function Home() {
       )}
 
       <HeroSection onSignUp={() => router.push("/signup")} />
-      <TestimonialsSection />
       <FeaturesSection />
+      <HowItWorksSection />
+      <TestimonialsSection />
+      <Footer />
     </main>
   );
 }

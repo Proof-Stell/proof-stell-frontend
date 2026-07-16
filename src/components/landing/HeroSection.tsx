@@ -1,5 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/router";
 import styles from "./HeroSection.module.css";
 
 interface HeroSectionProps {
@@ -14,6 +15,7 @@ const VerificationSteps = [
 ];
 
 export const HeroSection = ({ onSignUp }: HeroSectionProps) => {
+  const router = useRouter();
   const [activeStep, setActiveStep] = useState(0);
   const [verified, setVerified] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -85,7 +87,7 @@ export const HeroSection = ({ onSignUp }: HeroSectionProps) => {
             <button onClick={onSignUp} className={styles.btnPrimary}>
               VERIFY A DOCUMENT →
             </button>
-            <button className={styles.btnSecondary}>
+            <button className={styles.btnSecondary} onClick={() => router.push("/issuer")}>
               ISSUER PORTAL
             </button>
           </div>

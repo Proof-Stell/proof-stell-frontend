@@ -8,23 +8,30 @@ export function getConfiguredProviders(): WalletProviderName[] {
   return raw.split(",").map((s) => s.trim()).filter(Boolean);
 }
 
+type BrowserWindow = Window & typeof globalThis & Record<string, unknown>;
+
+interface FreighterProvider {
+  connect?: () => Promise<unknown>;
+  [key: string]: unknown;
+}
+
 /**
  * Attempts to connect to the named wallet provider.
  * Always safe to import on the server — the browser guard throws a clear error
  * if called in a non-browser context (which should never happen because all
  * callers are inside useEffect).
  */
-export async function connectToProvider(name: WalletProviderName): Promise<any> {
+export async function connectToProvider(name: WalletProviderName): Promise<unknown> {
   if (typeof window === "undefined") {
     throw new Error("Wallet connections are only available in the browser.");
   }
 
-  const win = window as any;
+  const win = window as BrowserWindow;
 
   // Freighter: injected as window.freighter or window.freighterApi
   if (name === "freighter") {
     const freighter =
-      win.freighter ?? win.freighterApi ?? win.freighterClient ?? null;
+      (win["freighter"] ?? win["freighterApi"] ?? win["freighterClient"] ?? null) as FreighterProvider | null;
     if (!freighter) {
       throw new Error(
         "Freighter wallet extension not detected. Please install Freighter and refresh.",
