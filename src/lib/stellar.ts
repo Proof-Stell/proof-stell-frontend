@@ -3,8 +3,8 @@ import { env } from "../config/environment";
 type JsonRpcResponse = {
   jsonrpc: string;
   id: number | string;
-  result?: any;
-  error?: any;
+  result?: unknown;
+  error?: unknown;
 };
 
 class SorobanService {
@@ -12,11 +12,11 @@ class SorobanService {
   networkPassphrase: string;
 
   constructor() {
-    this.rpcUrl = env.NEXT_PUBLIC_SOROBAN_RPC_URL;
-    this.networkPassphrase = env.NEXT_PUBLIC_SOROBAN_NETWORK_PASSPHRASE;
+    this.rpcUrl = (env.NEXT_PUBLIC_SOROBAN_RPC_URL as string | undefined) ?? "";
+    this.networkPassphrase = (env.NEXT_PUBLIC_SOROBAN_NETWORK_PASSPHRASE as string | undefined) ?? "";
   }
 
-  async rpc(method: string, params: any[] = []): Promise<any> {
+  async rpc(method: string, params: unknown[] = []): Promise<unknown> {
     const body = JSON.stringify({ jsonrpc: "2.0", id: 1, method, params });
     const res = await fetch(this.rpcUrl, {
       method: "POST",
@@ -24,7 +24,7 @@ class SorobanService {
       body,
     });
 
-    const json: JsonRpcResponse = await res.json();
+    const json = (await res.json()) as JsonRpcResponse;
     if (json.error) throw new Error(JSON.stringify(json.error));
     return json.result;
   }
