@@ -237,21 +237,30 @@ http://localhost:3000
 
 # 🔐 Environment Variables
 
-Copy `.env.example` to `.env.local` and fill in the values. The project validates environment variables at build time and will fail the build when required values are missing or malformed.
+Copy `.env.example` to `.env.local` and fill in the values. The app validates environment variables at startup but **does not crash** when required values are missing — it starts in a degraded state with console warnings.
 
-Minimum required values (see `.env.example`):
+### Required
 
-- `NEXT_PUBLIC_SOROBAN_RPC_URL`
-- `NEXT_PUBLIC_SOROBAN_NETWORK_PASSPHRASE`
-- `NEXT_PUBLIC_STELLAR_HORIZON_URL`
-- `NEXT_PUBLIC_PROOFSTELL_CONTRACT_ID`
+| Variable | Description |
+| --- | --- |
+| `NEXT_PUBLIC_SOROBAN_RPC_URL` | Soroban RPC endpoint (e.g. `https://soroban-testnet.stellar.org`) |
+| `NEXT_PUBLIC_SOROBAN_NETWORK_PASSPHRASE` | Stellar network passphrase |
+| `NEXT_PUBLIC_STELLAR_HORIZON_URL` | Stellar Horizon endpoint |
+| `NEXT_PUBLIC_PROOFSTELL_CONTRACT_ID` | ProofStell contract address |
 
-Optional but useful:
+Missing any of these will log a warning and disable blockchain features.
 
-- `NEXT_PUBLIC_ISSUER_CONTRACT_ID`
-- `NEXT_PUBLIC_WALLET_PROVIDERS` (comma-separated providers like `freighter,xbull`)
-- `NEXT_PUBLIC_API_BASE_URL`
-- `NEXT_PUBLIC_API_KEY`
+### Optional
+
+| Variable | Default / Fallback |
+| --- | --- |
+| `NEXT_PUBLIC_ISSUER_CONTRACT_ID` | `undefined` |
+| `NEXT_PUBLIC_WALLET_PROVIDERS` | Empty (no wallet providers) |
+| `NEXT_PUBLIC_API_BASE_URL` | Falls back to mock data |
+| `NEXT_PUBLIC_API_KEY` | None |
+| `NEXT_PUBLIC_APP_ENV` | `undefined` |
+| `NEXT_PUBLIC_LOG_LEVEL` | `undefined` |
+| `NEXT_PUBLIC_ENABLE_MOCK_DATA` | `false` |
 
 Example:
 
