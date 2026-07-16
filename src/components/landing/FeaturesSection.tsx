@@ -65,7 +65,7 @@ const FeatureCard = ({
   const [hovered, setHovered] = useState(false);
 
   return (
-    <motion.div
+    <motion.li
       ref={ref}
       initial={{ opacity: 0, y: 32 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -75,17 +75,17 @@ const FeatureCard = ({
       className={`${styles.card} ${hovered ? styles.cardHover : styles.cardDefault}`}
     >
       {/* Corner accent top-right */}
-      <div className={`${styles.cardCorner} ${hovered ? styles.cardCornerHover : styles.cardCornerDefault}`} />
+      <div className={`${styles.cardCorner} ${hovered ? styles.cardCornerHover : styles.cardCornerDefault}`} aria-hidden="true" />
 
       {/* Bottom glow on hover */}
-      {hovered && <div className={styles.cardBottomGlow} />}
+      {hovered && <div className={styles.cardBottomGlow} aria-hidden="true" />}
 
       {/* Header row */}
       <div className={styles.cardHeaderFlex}>
         <span className={styles.cardTag}>
           {feature.tag}
         </span>
-        <span className={styles.cardId}>
+        <span className={styles.cardId} aria-hidden="true">
           /{feature.id}
         </span>
       </div>
@@ -96,13 +96,13 @@ const FeatureCard = ({
       </h3>
 
       {/* Divider */}
-      <div className={`${styles.cardDivider} ${hovered ? styles.cardDividerHover : styles.cardDividerDefault}`} />
+      <div className={`${styles.cardDivider} ${hovered ? styles.cardDividerHover : styles.cardDividerDefault}`} aria-hidden="true" />
 
       {/* Description */}
       <p className={`${styles.cardDesc} ${hovered ? styles.cardDescHover : styles.cardDescDefault}`}>
         {feature.description}
       </p>
-    </motion.div>
+    </motion.li>
   );
 };
 
@@ -111,9 +111,9 @@ const FeaturesSection: React.FC = () => {
   const headerInView = useInView(headerRef, { once: true });
 
   return (
-    <section id="features" className={styles.section}>
+    <section id="features" className={styles.section} aria-labelledby="features-heading">
       {/* Grid bg */}
-      <div className={styles.gridOverlay} />
+      <div className={styles.gridOverlay} aria-hidden="true" />
 
       <div className={styles.contentWrapper}>
         {/* Section header */}
@@ -126,14 +126,14 @@ const FeaturesSection: React.FC = () => {
         >
           {/* Label */}
           <div className={styles.headerLabelWrapper}>
-            <div className={styles.headerLabelLine} />
+            <div className={styles.headerLabelLine} aria-hidden="true" />
             <span className={styles.headerLabelText}>
               PLATFORM CAPABILITIES
             </span>
           </div>
 
           <div className={styles.headerFlex}>
-            <h2 className={styles.headline}>
+            <h2 id="features-heading" className={styles.headline}>
               Cryptographic Trust,<br />
               <span style={{ color: "#00dc96" }}>Without the Middleman.</span>
             </h2>
@@ -144,11 +144,11 @@ const FeaturesSection: React.FC = () => {
         </motion.div>
 
         {/* Feature grid */}
-        <div className={styles.grid}>
+        <ul className={styles.grid} aria-label="Platform feature details">
           {features.map((f, i) => (
             <FeatureCard key={f.id} feature={f} index={i} />
           ))}
-        </div>
+        </ul>
 
         {/* Bottom stat strip */}
         <motion.div
@@ -157,6 +157,8 @@ const FeaturesSection: React.FC = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.4 }}
           className={styles.statsRow}
+          role="region"
+          aria-label="Operational Statistics"
         >
           {[
             { label: "Contracts Deployed", value: "4" },
