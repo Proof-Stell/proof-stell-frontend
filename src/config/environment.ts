@@ -15,6 +15,7 @@ const envSchema = z.object({
 
   NEXT_PUBLIC_APP_ENV: z.enum(["development", "staging", "production"]).optional(),
   NEXT_PUBLIC_LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).optional(),
+  NEXT_PUBLIC_ENABLE_MOCK_DATA: z.string().transform((val) => val === "true").optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

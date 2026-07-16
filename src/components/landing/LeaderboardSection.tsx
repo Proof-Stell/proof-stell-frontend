@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { PlayerCard } from "../leaderboard/PlayerCard";
+import { mockPlayers } from "@/lib/mockData";
+import { env } from "@/config/environment";
 
 interface Player {
   id: string;
@@ -27,165 +29,6 @@ interface Achievement {
   rarity: "common" | "rare" | "epic" | "legendary";
 }
 
-// Mock leaderboard data used for UI development and testing
-// Represents a ranked list of players with gamification metrics
-const mockPlayers: Player[] = [
-  {
-    id: "1",
-    rank: 1,
-    previousRank: 2, // used to show movement (up/down in leaderboard)
-    name: "MoleKing",
-    level: 24,
-    points: 2456,
-    avatar: "👑",
-    wallet: "0x1234...5678",
-
-    // Achievements earned by this player
-    // Each achievement has metadata for rarity-based styling
-    achievements: [
-      {
-        id: "1",
-        name: "Crown Holder",
-        description: "Reached #1 on leaderboard",
-        icon: "👑",
-        rarity: "legendary",
-      },
-      {
-        id: "2",
-        name: "Score Master",
-        description: "Scored over 2000 points",
-        icon: "🎯",
-        rarity: "epic",
-      },
-      {
-        id: "3",
-        name: "Streak King",
-        description: "10 game win streak",
-        icon: "🔥",
-        rarity: "rare",
-      },
-    ],
-
-    streak: 12,        // current active win streak
-    gamesPlayed: 156,  // total matches played
-    winRate: 78,       // percentage win rate
-  },
-
-  {
-    id: "2",
-    rank: 2,
-    previousRank: 1,
-    name: "WhackMaster",
-    level: 22,
-    points: 2189,
-    avatar: "🎭",
-    wallet: "0x8765...4321",
-
-    achievements: [
-      {
-        id: "4",
-        name: "Precision Pro",
-        description: "High accuracy rate",
-        icon: "🎯",
-        rarity: "epic",
-      },
-      {
-        id: "5",
-        name: "Speed Demon",
-        description: "Fast reaction times",
-        icon: "⚡",
-        rarity: "rare",
-      },
-    ],
-
-    streak: 8,
-    gamesPlayed: 134,
-    winRate: 82,
-  },
-
-  {
-    id: "3",
-    rank: 3,
-    previousRank: 3,
-    name: "MoleMaster99",
-    level: 20,
-    points: 1987,
-    avatar: "🔥",
-    wallet: "0x9999...0000",
-
-    achievements: [
-      {
-        id: "6",
-        name: "Veteran",
-        description: "100+ games played",
-        icon: "🏆",
-        rarity: "rare",
-      },
-      {
-        id: "7",
-        name: "Consistent",
-        description: "Daily player for 30 days",
-        icon: "📅",
-        rarity: "common",
-      },
-    ],
-
-    streak: 5,
-    gamesPlayed: 198,
-    winRate: 65,
-  },
-
-  {
-    id: "4",
-    rank: 4,
-    previousRank: 5,
-    name: "BlockChampion",
-    level: 19,
-    points: 1845,
-    avatar: "💎",
-    wallet: "0xaaaa...bbbb",
-
-    achievements: [
-      {
-        id: "8",
-        name: "Rising Star",
-        description: "Climbed 5 ranks in a day",
-        icon: "⭐",
-        rarity: "rare",
-      },
-    ],
-
-    streak: 3,
-    gamesPlayed: 89,
-    winRate: 71,
-  },
-
-  {
-    id: "5",
-    rank: 5,
-    previousRank: 4,
-    name: "StarkWhacker",
-    level: 18,
-    points: 1756,
-    avatar: "🎮",
-    wallet: "0xcccc...dddd",
-
-    achievements: [
-      {
-        id: "9",
-        name: "Newcomer",
-        description: "First week completed",
-        icon: "🌟",
-        rarity: "common",
-      },
-    ],
-
-    streak: 2,
-    gamesPlayed: 67,
-    winRate: 68,
-  },
-];
-
 export function LeaderboardSection() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
@@ -197,8 +40,16 @@ export function LeaderboardSection() {
       try {
         setLoading(true);
 
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        setPlayers(mockPlayers);
+        if (env.NEXT_PUBLIC_ENABLE_MOCK_DATA) {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          setPlayers(mockPlayers);
+        } else {
+          // Replace with real API call
+          // const res = await fetch('/api/leaderboard');
+          // const data = await res.json();
+          // setPlayers(data);
+          throw new Error("API not implemented yet");
+        }
       } catch (error) {
         setError("Failed to load leaderboard data");
         console.error("Error fetching leaderboard:", error);
