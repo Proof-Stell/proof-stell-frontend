@@ -85,18 +85,21 @@ const TYPE_COLORS: Record<Testimonial["type"], string> = {
 const TestimonialCard = ({
   testimonial,
   isCenter,
+  offset,
 }: {
   testimonial: Testimonial;
   isCenter: boolean;
+  offset: number;
 }) => {
   const color = TYPE_COLORS[testimonial.type];
 
   return (
-    <motion.div
+    <motion.figure
       initial={{ opacity: 0, scale: 0.92 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.88 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
+      className={`testimonial-card ${isCenter ? "active-card" : "inactive-card"}`}
       style={{
         background: isCenter ? "rgba(0,18,12,0.95)" : "rgba(0,10,6,0.5)",
         border: `1px solid ${isCenter ? `${color}55` : "rgba(0,220,150,0.08)"}`,
@@ -108,16 +111,18 @@ const TestimonialCard = ({
         opacity: isCenter ? 1 : 0.45,
         transform: isCenter ? "scale(1)" : "scale(0.95)",
         boxShadow: isCenter ? `0 0 40px ${color}14` : "none",
-        display: "flex",
+        display: offset !== 0 ? "none" : "flex", // Media query overrides below in inline-style tag
         flexDirection: "column",
         gap: 20,
         minHeight: 280,
         fontFamily: "'DM Mono', monospace",
+        margin: 0,
       }}
     >
       {/* Top accent line */}
       {isCenter && (
         <div
+          aria-hidden="true"
           style={{
             position: "absolute",
             top: 0,
@@ -171,8 +176,8 @@ const TestimonialCard = ({
         &ldquo;{testimonial.quote}&rdquo;
       </blockquote>
 
-      {/* User */}
-      <div
+      {/* User Figcaption Metadata */}
+      <figcaption
         style={{
           display: "flex",
           alignItems: "center",
@@ -183,6 +188,7 @@ const TestimonialCard = ({
       >
         {/* Avatar block */}
         <div
+          aria-hidden="true"
           style={{
             width: 36,
             height: 36,
@@ -226,11 +232,12 @@ const TestimonialCard = ({
             fontFamily: "'DM Mono', monospace",
             flexShrink: 0,
           }}
+          aria-label={`Transaction cryptographic hash: ${testimonial.hash}`}
         >
           {testimonial.hash}
         </div>
-      </div>
-    </motion.div>
+      </figcaption>
+    </motion.figure>
   );
 };
 
@@ -258,7 +265,6 @@ const TestimonialsSection: React.FC = () => {
     setCurrent((c) => (c + 1) % total);
   };
 
-  // Show 3 cards: left, center (active), right
   const getIdx = (offset: number) => (current + offset + total) % total;
 
   return (
@@ -274,13 +280,34 @@ const TestimonialsSection: React.FC = () => {
       }}
       onMouseEnter={() => setAutoPlay(false)}
       onMouseLeave={() => setAutoPlay(true)}
+      onFocus={() => setAutoPlay(false)}
+      onBlur={() => setAutoPlay(true)}
+      aria-labelledby="testimonials-heading"
     >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Mono:wght@400;500&display=swap');
+        
+        /* Mobile-first and desktop media queries for layout stability */
+        .testimonial-grid-track {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 16px;
+          align-items: stretch;
+        }
+
+        @media (min-width: 768px) {
+          .testimonial-grid-track {
+            grid-template-columns: 1fr 1.15fr 1fr;
+          }
+          .testimonial-card {
+            display: flex !important;
+          }
+        }
       `}</style>
 
-      {/* Radial glow */}
+      {/* Radial glow background */}
       <div
+        aria-hidden="true"
         style={{
           position: "absolute",
           bottom: "-20%",
@@ -305,12 +332,13 @@ const TestimonialsSection: React.FC = () => {
         >
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-              <div style={{ width: 24, height: 1, background: "#00dc96", boxShadow: "0 0 8px #00dc96" }} />
+              <div aria-hidden="true" style={{ width: 24, height: 1, background: "#00dc96", boxShadow: "0 0 8px #00dc96" }} />
               <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", letterSpacing: "0.2em", color: "#00dc96" }}>
                 VERIFIED TESTIMONIALS
               </span>
             </div>
             <h2
+              id="testimonials-heading"
               style={{
                 fontFamily: "'Space Mono', monospace",
                 fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)",
@@ -327,9 +355,10 @@ const TestimonialsSection: React.FC = () => {
           </div>
 
           {/* Nav controls */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }} role="group" aria-label="Carousel Controls">
             <button
               onClick={prev}
+              aria-label="Previous testimonial"
               style={{
                 width: 40,
                 height: 40,
@@ -356,11 +385,16 @@ const TestimonialsSection: React.FC = () => {
             >
               ←
             </button>
-            <span style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "#3a6050", padding: "0 8px" }}>
+            <span 
+              style={{ fontFamily: "'Space Mono', monospace", fontSize: "0.65rem", color: "#3a6050", padding: "0 8px" }}
+              aria-live="polite"
+              aria-atomic="true"
+            >
               {String(current + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
             </span>
             <button
               onClick={next}
+              aria-label="Next testimonial"
               style={{
                 width: 40,
                 height: 40,
@@ -390,45 +424,45 @@ const TestimonialsSection: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* Cards */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1.15fr 1fr",
-            gap: 16,
-            alignItems: "stretch",
-          }}
-        >
+        {/* Cards container track */}
+        <div className="testimonial-grid-track" role="region" aria-label="Testimonial slider">
           <AnimatePresence mode="popLayout">
             {[-1, 0, 1].map((offset) => (
               <TestimonialCard
                 key={`${getIdx(offset)}-${offset}`}
                 testimonial={testimonials[getIdx(offset)]}
                 isCenter={offset === 0}
+                offset={offset}
               />
             ))}
           </AnimatePresence>
         </div>
 
         {/* Progress dots */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 40 }}>
-          {testimonials.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrent(i)}
-              style={{
-                width: i === current ? 24 : 6,
-                height: 6,
-                borderRadius: 3,
-                border: "none",
-                background: i === current ? "#00dc96" : "rgba(0,220,150,0.15)",
-                cursor: "pointer",
-                transition: "all 0.3s",
-                padding: 0,
-                boxShadow: i === current ? "0 0 8px #00dc96" : "none",
-              }}
-            />
-          ))}
+        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 40 }} role="tablist" aria-label="Testimonial slides selection">
+          {testimonials.map((_, i) => {
+            const isSelected = i === current;
+            return (
+              <button
+                key={i}
+                role="tab"
+                aria-selected={isSelected}
+                aria-label={`Go to slide ${i + 1}`}
+                onClick={() => setCurrent(i)}
+                style={{
+                  width: isSelected ? 24 : 6,
+                  height: 6,
+                  borderRadius: 3,
+                  border: "none",
+                  background: isSelected ? "#00dc96" : "rgba(0,220,150,0.15)",
+                  cursor: "pointer",
+                  transition: "all 0.3s",
+                  padding: 0,
+                  boxShadow: isSelected ? "0 0 8px #00dc96" : "none",
+                }}
+              />
+            );
+          })}
         </div>
       </div>
     </section>
