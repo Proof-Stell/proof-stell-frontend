@@ -11,10 +11,10 @@ interface NavbarProps {
 }
 
 const NAV_LINKS = [
-  { label: "Verify", href: "/#verify" },
-  { label: "Credentials", href: "/#credentials" },
-  { label: "Issuers", href: "/#issuers" },
+  { label: "Features", href: "/#features" },
   { label: "How It Works", href: "/#how-it-works" },
+  { label: "Leaderboard", href: "/#leaderboard" },
+  { label: "Testimonials", href: "/#testimonials" },
 ];
 
 export function Navbar({ onLoginClick }: NavbarProps) {
@@ -27,7 +27,7 @@ export function Navbar({ onLoginClick }: NavbarProps) {
     if (typeof window === "undefined") return;
     setScrolled(window.scrollY > 20);
 
-    const sections = ["verify", "credentials", "issuers", "how-it-works"];
+    const sections = ["features", "how-it-works", "leaderboard", "testimonials"];
     for (const id of sections) {
       if (typeof document === "undefined") continue;
       const el = document.getElementById(id);

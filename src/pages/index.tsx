@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import TestimonialsSection from "../components/landing/TestimonialsSection";
 import FeaturesSection from "../components/landing/FeaturesSection";
 import HowItWorksSection from "../components/landing/HowItWorksSection";
+import { LeaderboardSection } from "../components/landing/LeaderboardSection";
 import Footer from "../components/landing/Footer";
 import { useWallet } from "@/components/providers";
 
@@ -40,6 +41,7 @@ export default function Home() {
       <HeroSection onSignUp={() => router.push("/signup")} />
       <FeaturesSection />
       <HowItWorksSection />
+      <LeaderboardSection />
       <TestimonialsSection />
       <Footer />
     </main>
