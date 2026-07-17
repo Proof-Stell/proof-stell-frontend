@@ -15,43 +15,65 @@ const envSchema = z.object({
 
   NEXT_PUBLIC_APP_ENV: z.enum(["development", "staging", "production"]).optional(),
   NEXT_PUBLIC_LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).optional(),
-  NEXT_PUBLIC_ENABLE_MOCK_DATA: z.string().transform((val) => val === "true").optional(),
+  NEXT_PUBLIC_ENABLE_MOCK_DATA: z
+    .string()
+    .transform((val) => val === "true")
+    .optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;
 
-/**
- * Validates environment variables at runtime. Returns the parsed env on success,
- * or logs a warning and returns a partial object on failure so the app does NOT
- * crash during server-side rendering or local dev without a full .env file.
- */
-export function validateEnv(): Partial<Env> {
-  const result = envSchema.safeParse(process.env);
-  if (!result.success) {
-    // Surface validation issues without crashing the process
-    if (typeof console !== "undefined") {
-      console.warn(
-        "[env] Environment validation failed. Some features may be unavailable.\n",
-        result.error.flatten().fieldErrors,
-      );
-    }
-    // Return whatever was parseable so optional callers still work
-    return (process.env as unknown) as Partial<Env>;
+const REQUIRED_KEYS: (keyof Env)[] = [
+  "NEXT_PUBLIC_SOROBAN_RPC_URL",
+  "NEXT_PUBLIC_SOROBAN_NETWORK_PASSPHRASE",
+  "NEXT_PUBLIC_STELLAR_HORIZON_URL",
+  "NEXT_PUBLIC_PROOFSTELL_CONTRACT_ID",
+];
+
+const WARN_LABEL = "[env]";
+
+function logDiagnostics(result: ReturnType<typeof envSchema.safeParse>) {
+  if (typeof console === "undefined") return;
+  if (result.success) return;
+
+  const flat = result.error.flatten();
+  const fieldErrors = flat.fieldErrors as Record<string, string[]>;
+  const missing = REQUIRED_KEYS.filter((k) => !process.env[k]);
+
+  if (missing.length) {
+    console.warn(
+      `${WARN_LABEL} Missing required env vars: ${missing.join(", ")}`,
+    );
+    console.warn(
+      `${WARN_LABEL} The app will start in degraded mode. Some features will be unavailable.`,
+    );
   }
-  return result.data;
+
+  const optionalErrors = Object.entries(fieldErrors)
+    .filter(([k]) => !REQUIRED_KEYS.includes(k as keyof Env))
+    .filter(([, v]) => v && v.length > 0);
+
+  if (optionalErrors.length) {
+    console.warn(
+      `${WARN_LABEL} Optional env vars with invalid values: ${optionalErrors.map(([k]) => k).join(", ")}`,
+    );
+  }
 }
 
-/**
- * Lazily-evaluated env singleton. Evaluation is deferred so SSR module
- * initialisation does NOT throw when env vars are missing.
- */
+export function validateEnv(): Partial<Env> {
+  const result = envSchema.safeParse(process.env);
+  logDiagnostics(result);
+  if (result.success) return result.data;
+  return (process.env as unknown) as Partial<Env>;
+}
+
 let _env: Partial<Env> | null = null;
+
 export function getEnv(): Partial<Env> {
   if (!_env) _env = validateEnv();
   return _env;
 }
 
-// Convenience alias — safe to use anywhere; won't crash on SSR.
 export const env = new Proxy({} as Partial<Env>, {
   get(_target, prop) {
     return getEnv()[prop as keyof Env];

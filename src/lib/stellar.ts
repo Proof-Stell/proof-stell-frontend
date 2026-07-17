@@ -8,15 +8,20 @@ type JsonRpcResponse = {
 };
 
 class SorobanService {
-  rpcUrl: string;
-  networkPassphrase: string;
+  get rpcUrl(): string {
+    return (env.NEXT_PUBLIC_SOROBAN_RPC_URL as string | undefined) ?? "";
+  }
 
-  constructor() {
-    this.rpcUrl = (env.NEXT_PUBLIC_SOROBAN_RPC_URL as string | undefined) ?? "";
-    this.networkPassphrase = (env.NEXT_PUBLIC_SOROBAN_NETWORK_PASSPHRASE as string | undefined) ?? "";
+  get networkPassphrase(): string {
+    return (env.NEXT_PUBLIC_SOROBAN_NETWORK_PASSPHRASE as string | undefined) ?? "";
   }
 
   async rpc(method: string, params: unknown[] = []): Promise<unknown> {
+    if (!this.rpcUrl) {
+      throw new Error(
+        "NEXT_PUBLIC_SOROBAN_RPC_URL is not set. Cannot make RPC calls.",
+      );
+    }
     const body = JSON.stringify({ jsonrpc: "2.0", id: 1, method, params });
     const res = await fetch(this.rpcUrl, {
       method: "POST",
@@ -30,7 +35,7 @@ class SorobanService {
   }
 
   getHorizonUrl() {
-    return env.NEXT_PUBLIC_STELLAR_HORIZON_URL;
+    return (env.NEXT_PUBLIC_STELLAR_HORIZON_URL as string | undefined) ?? "";
   }
 }
 
