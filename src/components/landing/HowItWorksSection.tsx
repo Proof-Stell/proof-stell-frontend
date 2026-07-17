@@ -40,6 +40,7 @@ export default function HowItWorksSection() {
         position: "relative",
         overflow: "hidden",
         fontFamily: "'DM Mono', monospace",
+        scrollMarginTop: 100,
       }}
     >
       {/* Grid bg */}

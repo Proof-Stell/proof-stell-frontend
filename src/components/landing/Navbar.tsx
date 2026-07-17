@@ -3,6 +3,7 @@
 import Link from "next/link";
 import React, { useCallback, useState } from "react";
 import { useEventListener } from "../../hooks/useEventListener";
+import { useActiveSection } from "../../hooks/useActiveSection";
 import { useWallet } from "../providers";
 import styles from "./Navbar.module.css";
 
@@ -19,30 +20,27 @@ const NAV_LINKS = [
 
 export function Navbar({ onLoginClick }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>("");
+  const activeSection = useActiveSection();
   const [menuOpen, setMenuOpen] = useState(false);
   const { status, error } = useWallet();
 
   const handleScroll = useCallback(() => {
     if (typeof window === "undefined") return;
     setScrolled(window.scrollY > 20);
-
-    const sections = ["features", "how-it-works", "leaderboard", "testimonials"];
-    for (const id of sections) {
-      if (typeof document === "undefined") continue;
-      const el = document.getElementById(id);
-      if (el) {
-        const rect = el.getBoundingClientRect();
-        if (rect.top <= 90 && rect.bottom >= 90) {
-          setActiveSection(id);
-          return;
-        }
-      }
-    }
-    setActiveSection("");
   }, []);
 
   useEventListener("scroll", handleScroll);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    const id = href.replace("/#", "");
+    const el = document.getElementById(id);
+    if (el) {
+      e.preventDefault();
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.history.replaceState(null, "", href);
+    }
+    setMenuOpen(false);
+  };
 
   const ctaLabel =
     status === "loading"
@@ -100,6 +98,7 @@ export function Navbar({ onLoginClick }: NavbarProps) {
                 <li key={link.label}>
                   <Link
                     href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
                     className={`${styles.navLink} ${isActive ? styles.active : ""}`}
                     aria-current={isActive ? "page" : undefined}
                   >
@@ -148,7 +147,7 @@ export function Navbar({ onLoginClick }: NavbarProps) {
               key={link.label}
               href={link.href}
               className={styles.mobileLink}
-              onClick={() => setMenuOpen(false)}
+              onClick={(e) => handleNavClick(e, link.href)}
             >
               {link.label.toUpperCase()}
             </Link>
