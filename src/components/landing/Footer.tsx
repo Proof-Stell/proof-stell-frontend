@@ -1,25 +1,6 @@
 import React from "react";
 import Link from "next/link";
-
-const LINKS = {
-  Platform: [
-    { label: "Verify Document", href: "/verify" },
-    { label: "My Dashboard", href: "/dashboard" },
-    { label: "Issuer Portal", href: "/issuer" },
-    { label: "Connect Wallet", href: "/signup" },
-  ],
-  Protocol: [
-    { label: "How It Works", href: "/#how-it-works" },
-    { label: "Features", href: "/#features" },
-    { label: "Soroban Contracts", href: "/#features" },
-    { label: "Revocation Registry", href: "/#features" },
-  ],
-  Community: [
-    { label: "GitHub", href: "https://github.com/ProofStell", external: true },
-    { label: "Contributing", href: "/CONTRIBUTING.md", external: true },
-    { label: "MIT License", href: "#", external: false },
-  ],
-};
+import { FOOTER_LINKS } from "@/config/landingContent";
 
 export default function Footer() {
   return (
@@ -122,7 +103,7 @@ export default function Footer() {
           </div>
 
           {/* Link columns */}
-          {Object.entries(LINKS).map(([section, items]) => (
+          {Object.entries(FOOTER_LINKS).map(([section, items]) => (
             <div key={section}>
               <div
                 style={{

@@ -1,86 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-interface Testimonial {
-  id: string;
-  quote: string;
-  name: string;
-  role: string;
-  org: string;
-  type: "issuer" | "verifier" | "user";
-  hash: string;
-  txBlock: string;
-}
-
-const testimonials: Testimonial[] = [
-  {
-    id: "0x3f8a",
-    quote:
-      "We issue hundreds of certificates a month. ProofStell eliminated fraud inquiries entirely — every employer can verify directly on-chain without calling us.",
-    name: "Dr. Amara Osei",
-    role: "Registrar",
-    org: "University of Accra",
-    type: "issuer",
-    hash: "3f8a...c92d",
-    txBlock: "#9,841,002",
-  },
-  {
-    id: "0x7b2c",
-    quote:
-      "I verified a candidate's engineering certificate in under three seconds. No email chains, no PDF forgeries. This is how hiring should work.",
-    name: "Kenji Watanabe",
-    role: "Head of Engineering",
-    org: "Meridian Labs",
-    type: "verifier",
-    hash: "7b2c...f14a",
-    txBlock: "#9,843,551",
-  },
-  {
-    id: "0x1d9e",
-    quote:
-      "My credentials live in my Stellar wallet. I share a proof link with anyone who needs verification — no waiting, no middlemen, no data leaks.",
-    name: "Fatima Al-Rashid",
-    role: "Compliance Officer",
-    org: "Independent",
-    type: "user",
-    hash: "1d9e...a87b",
-    txBlock: "#9,845,790",
-  },
-  {
-    id: "0xc41f",
-    quote:
-      "We revoked an expired certification on-chain in one transaction. The status updated globally, instantly. Our legal team was impressed.",
-    name: "Priya Menon",
-    role: "Director of Ops",
-    org: "NovaCert Authority",
-    type: "issuer",
-    hash: "c41f...0e3d",
-    txBlock: "#9,846,120",
-  },
-  {
-    id: "0x9a3b",
-    quote:
-      "Auditing compliance documents used to take days. With ProofStell's on-chain revocation registry, I can check any credential's status in real time.",
-    name: "Marcus Eze",
-    role: "Lead Auditor",
-    org: "TrustFrame Partners",
-    type: "verifier",
-    hash: "9a3b...d25c",
-    txBlock: "#9,847,019",
-  },
-];
-
-const TYPE_LABELS: Record<Testimonial["type"], string> = {
-  issuer: "CREDENTIAL ISSUER",
-  verifier: "THIRD-PARTY VERIFIER",
-  user: "WALLET HOLDER",
-};
-
-const TYPE_COLORS: Record<Testimonial["type"], string> = {
-  issuer: "#00dc96",
-  verifier: "#38bdf8",
-  user: "#a78bfa",
-};
+import {
+  TESTIMONIALS,
+  TESTIMONIAL_TYPE_LABELS,
+  TESTIMONIAL_TYPE_COLORS,
+  SECTION_IDS,
+} from "@/config/landingContent";
+import type { Testimonial } from "@/config/landingContent";
 
 const TestimonialCard = ({
   testimonial,
@@ -91,7 +17,7 @@ const TestimonialCard = ({
   isCenter: boolean;
   offset: number;
 }) => {
-  const color = TYPE_COLORS[testimonial.type];
+  const color = TESTIMONIAL_TYPE_COLORS[testimonial.type];
 
   return (
     <motion.figure
@@ -148,7 +74,7 @@ const TestimonialCard = ({
             fontFamily: "'Space Mono', monospace",
           }}
         >
-          {TYPE_LABELS[testimonial.type]}
+          {TESTIMONIAL_TYPE_LABELS[testimonial.type]}
         </span>
         <span
           style={{
@@ -247,7 +173,7 @@ const TestimonialsSection: React.FC = () => {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const headerRef = useRef(null);
 
-  const total = testimonials.length;
+  const total = TESTIMONIALS.length;
 
   useEffect(() => {
     if (!autoPlay) return;
@@ -269,7 +195,7 @@ const TestimonialsSection: React.FC = () => {
 
   return (
     <section
-      id="testimonials"
+      id={SECTION_IDS.TESTIMONIALS}
       style={{
         background: "#060a10",
         borderTop: "1px solid rgba(0,220,150,0.08)",
@@ -430,7 +356,7 @@ const TestimonialsSection: React.FC = () => {
             {[-1, 0, 1].map((offset) => (
               <TestimonialCard
                 key={`${getIdx(offset)}-${offset}`}
-                testimonial={testimonials[getIdx(offset)]}
+                testimonial={TESTIMONIALS[getIdx(offset)]}
                 isCenter={offset === 0}
                 offset={offset}
               />
@@ -440,7 +366,7 @@ const TestimonialsSection: React.FC = () => {
 
         {/* Progress dots */}
         <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 40 }} role="tablist" aria-label="Testimonial slides selection">
-          {testimonials.map((_, i) => {
+          {TESTIMONIALS.map((_, i) => {
             const isSelected = i === current;
             return (
               <button
