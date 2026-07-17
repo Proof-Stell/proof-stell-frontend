@@ -1,4 +1,3 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
 import { z } from "zod";
 
@@ -18,20 +17,24 @@ async function handler(
   res: NextApiResponse<ApiResponse<CompoData>>,
 ) {
   if (req.method !== "GET" && req.method !== "POST") {
-    return methodNotAllowed(res, ["GET", "POST"]);
+    return methodNotAllowed(req, res, ["GET", "POST"]);
   }
+
+  const requestId = (req as NextApiRequest & { requestId: string }).requestId;
 
   if (req.method === "POST") {
     const { component } = bodySchema.parse(req.body ?? {});
     return res.status(200).json({
       success: true,
       data: { name: component ?? "Component returned" },
+      requestId,
     });
   }
 
   return res.status(200).json({
     success: true,
     data: { name: "Component returned" },
+    requestId,
   });
 }
 
