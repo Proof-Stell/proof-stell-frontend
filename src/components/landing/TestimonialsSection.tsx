@@ -203,6 +203,7 @@ const TestimonialsSection: React.FC = () => {
         position: "relative",
         overflow: "hidden",
         fontFamily: "'DM Mono', monospace",
+        scrollMarginTop: 100,
       }}
       onMouseEnter={() => setAutoPlay(false)}
       onMouseLeave={() => setAutoPlay(true)}

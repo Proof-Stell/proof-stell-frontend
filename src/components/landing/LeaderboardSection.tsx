@@ -104,6 +104,7 @@ export function LeaderboardSection() {
     <section 
       id={SECTION_IDS.LEADERBOARD} 
       className="container mx-auto px-4 py-12"
+      style={{ scrollMarginTop: 100 }}
       aria-labelledby="leaderboard-heading"
     >
       <div className="text-center mb-12">

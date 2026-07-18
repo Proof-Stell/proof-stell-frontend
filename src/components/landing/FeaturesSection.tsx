@@ -62,6 +62,7 @@ const FeaturesSection: React.FC = () => {
   const headerInView = useInView(headerRef, { once: true });
 
   return (
+    <section id="features" className={styles.section} style={{ scrollMarginTop: 100 }} aria-labelledby="features-heading">
     <section id={SECTION_IDS.FEATURES} className={styles.section} aria-labelledby="features-heading">
       {/* Grid bg */}
       <div className={styles.gridOverlay} aria-hidden="true" />
