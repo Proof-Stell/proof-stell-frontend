@@ -1,30 +1,6 @@
 import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-
-const FLOWS = [
-  {
-    id: "verification",
-    title: "Document Verification",
-    color: "#00dc96",
-    steps: [
-      { n: "01", title: "Upload Document", body: "Drag and drop any PDF, image, or text file. Your file never leaves the browser." },
-      { n: "02", title: "Hash Generated", body: "A SHA-256 fingerprint is computed client-side using the Web Crypto API." },
-      { n: "03", title: "Chain Queried", body: "The hash is sent to the Soroban smart contract on Stellar for lookup." },
-      { n: "04", title: "Result Returned", body: "Valid, Revoked, or Not Found — with issuer identity and block reference." },
-    ],
-  },
-  {
-    id: "issuance",
-    title: "Credential Issuance",
-    color: "#38bdf8",
-    steps: [
-      { n: "01", title: "Institution Logs In", body: "Verified institutions authenticate via their Stellar wallet — no passwords." },
-      { n: "02", title: "Credential Created", body: "Document hash, recipient wallet, metadata, and expiry are configured." },
-      { n: "03", title: "On-Chain Record", body: "Soroban contract records the issuance permanently on Stellar mainnet." },
-      { n: "04", title: "Publicly Verifiable", body: "Credential is instantly verifiable by anyone, globally, with no middleman." },
-    ],
-  },
-];
+import { HOW_IT_WORKS_FLOWS, SECTION_IDS } from "@/config/landingContent";
 
 export default function HowItWorksSection() {
   const headerRef = useRef(null);
@@ -32,7 +8,7 @@ export default function HowItWorksSection() {
 
   return (
     <section
-      id="how-it-works"
+      id={SECTION_IDS.HOW_IT_WORKS}
       style={{
         background: "#060d0a",
         borderTop: "1px solid rgba(0,220,150,0.06)",
@@ -154,7 +130,7 @@ export default function HowItWorksSection() {
             gap: 32,
           }}
         >
-          {FLOWS.map((flow, fi) => (
+          {HOW_IT_WORKS_FLOWS.map((flow, fi) => (
             <motion.div
               key={flow.id}
               initial={{ opacity: 0, y: 32 }}

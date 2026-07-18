@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { PlayerCard } from "../leaderboard/PlayerCard";
 import { mockPlayers } from "@/lib/mockData";
 import { env } from "@/config/environment";
+import { SECTION_IDS } from "@/config/landingContent";
 
 interface Player {
   id: string;
@@ -101,7 +102,7 @@ export function LeaderboardSection() {
 
   return (
     <section 
-      id="leaderboard" 
+      id={SECTION_IDS.LEADERBOARD} 
       className="container mx-auto px-4 py-12"
       style={{ scrollMarginTop: 100 }}
       aria-labelledby="leaderboard-heading"

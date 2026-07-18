@@ -1,63 +1,14 @@
 import React, { useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
+import { FEATURES, FEATURE_STATS, SECTION_IDS } from "@/config/landingContent";
+import type { Feature } from "@/config/landingContent";
 import styles from "./FeaturesSection.module.css";
-
-const features = [
-  {
-    id: "01",
-    title: "On-Chain Document Proofs",
-    tag: "CORE",
-    description:
-      "Institutions register documents by storing cryptographic hashes directly on Soroban smart contracts. Anyone can verify authenticity by comparing a file's hash with the immutable blockchain record.",
-    accent: "#00dc96",
-  },
-  {
-    id: "02",
-    title: "Institutional Issuers",
-    tag: "ISSUERS",
-    description:
-      "Verified institutions — universities, employers, NGOs — issue credentials directly to users' Stellar wallets. Certificates, employment letters, compliance approvals: all tamper-proof.",
-    accent: "#00dc96",
-  },
-  {
-    id: "03",
-    title: "Wallet-Based Identity",
-    tag: "IDENTITY",
-    description:
-      "No usernames. No passwords. Connect your Stellar wallet to receive credentials, share verifiable proofs, and manage all issued documents. Self-sovereign by design.",
-    accent: "#00dc96",
-  },
-  {
-    id: "04",
-    title: "Instant Verification",
-    tag: "VERIFY",
-    description:
-      "Upload a document — the platform hashes it, queries the Soroban contract, and returns a result in seconds. Valid, Not Found, or Revoked. No intermediary required.",
-    accent: "#00dc96",
-  },
-  {
-    id: "05",
-    title: "Revocation Registry",
-    tag: "REGISTRY",
-    description:
-      "Issuers can revoke credentials on-chain — fraudulent certificates, expired compliance docs, recalled licenses. Revocation state is permanently transparent and auditable.",
-    accent: "#00dc96",
-  },
-  {
-    id: "06",
-    title: "Trustless Infrastructure",
-    tag: "PROTOCOL",
-    description:
-      "Built entirely on Soroban smart contracts. No centralized databases, no trusted third parties. ProofStell anchors cryptographic proofs on Stellar — permanent and globally verifiable.",
-    accent: "#00dc96",
-  },
-];
 
 const FeatureCard = ({
   feature,
   index,
 }: {
-  feature: (typeof features)[0];
+  feature: Feature;
   index: number;
 }) => {
   const ref = useRef(null);
@@ -112,6 +63,7 @@ const FeaturesSection: React.FC = () => {
 
   return (
     <section id="features" className={styles.section} style={{ scrollMarginTop: 100 }} aria-labelledby="features-heading">
+    <section id={SECTION_IDS.FEATURES} className={styles.section} aria-labelledby="features-heading">
       {/* Grid bg */}
       <div className={styles.gridOverlay} aria-hidden="true" />
 
@@ -145,7 +97,7 @@ const FeaturesSection: React.FC = () => {
 
         {/* Feature grid */}
         <ul className={styles.grid} aria-label="Platform feature details">
-          {features.map((f, i) => (
+          {FEATURES.map((f, i) => (
             <FeatureCard key={f.id} feature={f} index={i} />
           ))}
         </ul>
@@ -160,12 +112,7 @@ const FeaturesSection: React.FC = () => {
           role="region"
           aria-label="Operational Statistics"
         >
-          {[
-            { label: "Contracts Deployed", value: "4" },
-            { label: "Avg Verify Time", value: "<3s" },
-            { label: "Trust Model", value: "Zero" },
-            { label: "Network", value: "Stellar" },
-          ].map((s, i) => (
+          {FEATURE_STATS.map((s, i) => (
             <div
               key={s.label}
               className={`${styles.statItem} ${i === 0 ? styles.statItemFirst : ''} ${i === 3 ? styles.statItemLast : ''}`}
