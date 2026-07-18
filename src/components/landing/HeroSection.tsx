@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import styles from "./HeroSection.module.css";
 import { VerificationSteps } from "@/lib/mockData";
 import { env } from "@/config/environment";
+import { HERO_STATS } from "@/config/landingContent";
 
 interface HeroSectionProps {
   onSignUp: () => void;
@@ -96,11 +97,7 @@ export const HeroSection = ({ onSignUp }: HeroSectionProps) => {
 
           {/* Stats row */}
           <div className="flex gap-10 pt-4" role="region" aria-label="Platform Statistics">
-            {[
-              { value: "100%", label: "Tamper-Proof" },
-              { value: "<3s", label: "Verify Time" },
-              { value: "0", label: "Central Servers" },
-            ].map((stat) => (
+            {HERO_STATS.map((stat) => (
               <div key={stat.label}>
                 <div className={styles.statValue}>
                   {stat.value}

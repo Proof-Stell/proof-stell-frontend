@@ -4,18 +4,12 @@ import Link from "next/link";
 import React, { useCallback, useState } from "react";
 import { useEventListener } from "../../hooks/useEventListener";
 import { useWallet } from "../providers";
+import { NAV_LINKS, SECTION_IDS_LIST } from "@/config/landingContent";
 import styles from "./Navbar.module.css";
 
 interface NavbarProps {
   onLoginClick: () => void;
 }
-
-const NAV_LINKS = [
-  { label: "Features", href: "/#features" },
-  { label: "How It Works", href: "/#how-it-works" },
-  { label: "Leaderboard", href: "/#leaderboard" },
-  { label: "Testimonials", href: "/#testimonials" },
-];
 
 export function Navbar({ onLoginClick }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
@@ -27,8 +21,7 @@ export function Navbar({ onLoginClick }: NavbarProps) {
     if (typeof window === "undefined") return;
     setScrolled(window.scrollY > 20);
 
-    const sections = ["features", "how-it-works", "leaderboard", "testimonials"];
-    for (const id of sections) {
+    for (const id of SECTION_IDS_LIST) {
       if (typeof document === "undefined") continue;
       const el = document.getElementById(id);
       if (el) {
