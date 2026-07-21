@@ -1,10 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { SECTION_IDS_LIST } from "@/config/landingContent";
-
 export function useActiveSection(): string {
   const [activeSection, setActiveSection] = useState("");
-
   useEffect(() => {
     const handleScroll = () => {
       const scrollY = window.scrollY;
