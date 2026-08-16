@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useWallet } from "@/components/providers";
 import Head from "next/head";
 import Link from "next/link";
 import {
@@ -122,6 +123,7 @@ const rs: Record<string, React.CSSProperties> = {
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export default function IssuerPage() {
+  const { status, walletAddress, logout } = useWallet();
   const [tab, setTab] = useState<Tab>("issued");
   const [issued, setIssued] = useState<CredentialSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,15 +140,29 @@ export default function IssuerPage() {
     expiresAt: "",
   });
 
+  const activeWallet = walletAddress || ISSUER_WALLET;
+
   useEffect(() => {
-    getCredentialsByWallet(ISSUER_WALLET)
-      .then((data) => { setIssued(data); setLoading(false); })
-      .catch(() => { setLoading(false); });
-  }, []);
+    if (status === "unauthenticated") {
+      setLoading(false);
+      return;
+    }
+    if (status !== "connected" || !walletAddress) return;
+
+    setLoading(true);
+    getCredentialsByWallet(activeWallet)
+      .then((data) => {
+        setIssued(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  }, [status, walletAddress, activeWallet]);
 
   const handleRevoke = async (id: string) => {
     try {
-      await revokeCredential(id, ISSUER_WALLET);
+      await revokeCredential(id, activeWallet);
       setIssued((prev) =>
         prev.map((c) => (c.id === id ? { ...c, status: "revoked" } : c)),
       );
@@ -164,7 +180,7 @@ export default function IssuerPage() {
     setIssueStatus("submitting");
     setIssueError(null);
     try {
-      const newCred = await issueCredential(form, ISSUER_WALLET);
+      const newCred = await issueCredential(form, activeWallet);
       setIssued((prev) => [newCred, ...prev]);
       setIssueStatus("success");
       setForm({ recipientWallet: "", title: "", type: CREDENTIAL_TYPES[0], description: "", documentHash: "", expiresAt: "" });
@@ -177,6 +193,69 @@ export default function IssuerPage() {
 
   const setField = (k: keyof IssueCredentialInput) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const router = useRouter();
+
+  if (status === "loading" || status === "idle") {
+    return (
+      <>
+        <Head><title>Loading Issuer Portal — ProofStell</title></Head>
+        <div style={p.page}>
+          <div style={p.grid} />
+          <div style={p.glow} />
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", color: "#3a6050", fontFamily: "'Space Mono', monospace" }}>
+            INITIALIZING SECURE SESSION…
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (status === "unauthenticated") {
+    return (
+      <>
+        <Head><title>Access Issuer Portal — ProofStell</title></Head>
+        <div style={p.page}>
+          <div style={p.grid} />
+          <div style={p.glow} />
+          
+          <header style={p.header}>
+            <Link href="/" style={p.navLogo}>
+              <div style={p.logoMark}><div style={p.logoInner} /></div>
+              <span style={{ fontSize: "0.95rem", fontWeight: 700, color: "#e8f5f0", fontFamily: "'Space Mono', monospace" }}>
+                Proof<span style={{ color: "#00dc96" }}>Stell</span>
+              </span>
+            </Link>
+          </header>
+
+          <div style={{ ...p.body, alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 120px)" }}>
+            <div style={{
+              background: "rgba(0,18,12,0.8)",
+              border: "1px solid rgba(0,220,150,0.15)",
+              borderRadius: 4,
+              padding: "40px 32px",
+              maxWidth: 450,
+              width: "100%",
+              textAlign: "center",
+              position: "relative"
+            }}>
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "#00dc96" }} />
+              <div style={{ fontSize: "2.5rem", marginBottom: 20 }}>🔒</div>
+              <h2 style={{ fontFamily: "'Space Mono', monospace", color: "#e8f5f0", fontSize: "1.2rem", fontWeight: 700, marginBottom: 12 }}>
+                Authentication Required
+              </h2>
+              <p style={{ color: "#5a8070", fontSize: "0.8rem", lineHeight: 1.5, marginBottom: 28 }}>
+                Please connect your Stellar wallet to access the verified credentials issuer portal.
+              </p>
+              <button onClick={() => router.push("/signup")} style={{ ...p.primaryBtn, width: "100%" }}>
+                CONNECT WALLET
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -198,6 +277,28 @@ export default function IssuerPage() {
             <Link href="/verify" style={p.navLink}>VERIFY</Link>
             <Link href="/dashboard" style={p.navLink}>DASHBOARD</Link>
             <span style={{ ...p.navLink, color: "#00dc96", borderBottom: "1px solid #00dc96", paddingBottom: 2 }}>ISSUER PORTAL</span>
+            {status === "connected" && (
+              <button 
+                id="issuer-logout-btn"
+                onClick={async () => { await logout(); router.push("/"); }} 
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(239,68,68,0.3)",
+                  color: "#ef4444",
+                  fontSize: "0.55rem",
+                  letterSpacing: "0.1em",
+                  padding: "4px 10px",
+                  borderRadius: 2,
+                  cursor: "pointer",
+                  fontFamily: "'Space Mono', monospace",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+              >
+                LOGOUT
+              </button>
+            )}
           </nav>
         </header>
 

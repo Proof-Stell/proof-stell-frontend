@@ -25,7 +25,7 @@ const WALLETS = [
 
 export default function SignupPage() {
   const router = useRouter();
-  const { status, error: walletError } = useWallet();
+  const { status, error: walletError, login } = useWallet();
   const [step, setStep] = useState<Step>("choose");
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -43,23 +43,7 @@ export default function SignupPage() {
     setLocalError(null);
 
     try {
-      type BrowserWin = Window & typeof globalThis & Record<string, unknown>;
-      type WalletProvider = { connect?: () => Promise<unknown> } & Record<string, unknown>;
-      const win = window as BrowserWin;
-      let provider: WalletProvider | null = null;
-
-      if (walletId === "freighter") {
-        provider =
-          (win["freighter"] ?? win["freighterApi"] ?? win["freighterClient"] ?? null) as WalletProvider | null;
-        if (!provider) throw new Error("Freighter extension not found. Please install it from freighter.app and refresh.");
-        if (typeof provider.connect === "function") await provider.connect();
-      } else if (walletId === "xbull") {
-        provider = (win["xBullSDK"] ?? win["xbull"] ?? null) as WalletProvider | null;
-        if (!provider) throw new Error("xBull extension not found. Please install xBull and refresh.");
-      } else {
-        throw new Error(`Unknown wallet: ${walletId}`);
-      }
-
+      await login(walletId);
       setStep("success");
     } catch (err: unknown) {
       setLocalError((err as Error)?.message ?? "Connection failed. Please try again.");
