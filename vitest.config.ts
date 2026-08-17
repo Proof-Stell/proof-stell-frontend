@@ -3,7 +3,8 @@ import path from "path";
 
 export default defineConfig({
   test: {
-    environment: "node",
+    environment: "happy-dom",
+    globals: true,
   },
   resolve: {
     alias: {
