@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import {
   getCredentialsByWallet,
+  ResponseValidationError,
   type CredentialSummary,
   type VerificationStatus,
 } from "@/lib/api/proofstell";
@@ -115,7 +116,15 @@ export default function DashboardPage() {
         setLoading(false);
       })
       .catch((e) => {
-        setError(e.message ?? "Failed to load credentials");
+        // A ResponseValidationError means the API drifted from its contract;
+        // its message already pinpoints the offending field(s).
+        setError(
+          e instanceof ResponseValidationError
+            ? e.message
+            : e instanceof Error
+              ? e.message
+              : "Failed to load credentials",
+        );
         setLoading(false);
       });
   }, [status, walletAddress]);

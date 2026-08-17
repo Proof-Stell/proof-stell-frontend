@@ -213,12 +213,34 @@ export function getEnv(): Partial<Env> {
 /**
  * Proxy-based accessor for type-safe environment variable access.
  *
+ * Each variable is validated against its Zod schema the first time it is
+ * accessed, so malformed values produce a descriptive console warning at
+ * the point of use instead of silently flowing into the application as an
+ * untyped string.
+ *
  * @example
  * import { env } from "@/config/environment";
  * const rpcUrl = env.NEXT_PUBLIC_SOROBAN_RPC_URL;
  */
 export const env = new Proxy({} as Partial<Env>, {
   get(_target, prop) {
-    return getEnv()[prop as keyof Env];
+    const key = prop as keyof Env;
+    const cached = getEnv();
+    if (cached && key in cached) return cached[key];
+
+    // Fall back to per-key runtime validation when soft validation failed
+    // (e.g. degraded dev mode) so consumers still get parsed, typed values.
+    const schema = envSchema.shape[key];
+    if (!schema) return undefined;
+
+    const result = schema.safeParse(process.env[key]);
+    if (!result.success && typeof console !== "undefined") {
+      console.warn(
+        `${WARN_LABEL} Invalid value for ${key}: ${result.error.issues
+          .map((issue) => issue.message)
+          .join("; ")}`
+      );
+    }
+    return result.success ? result.data : process.env[key];
   },
 });
