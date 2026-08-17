@@ -24,8 +24,7 @@ function fmt(iso?: string) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-// ── Dummy wallet address for demo ─────────────────────────────────────────
-const DEMO_WALLET = "GABC4364PEPQTDICMIQDZ56K4T75QZCR4NBEYKO6PDRFERNTR5LR2HP";
+
 
 // ── Credential card ────────────────────────────────────────────────────────
 

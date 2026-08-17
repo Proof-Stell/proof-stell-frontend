@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { getConfiguredProviders, connectToProvider } from "../lib/wallet";
+import { connectToProvider } from "../lib/wallet";
 import { encryptData, decryptData } from "../utils/crypto";
 
 // Context value describing wallet and authentication state
@@ -223,9 +223,9 @@ export function Providers({ children }: ProvidersProps) {
 
         const timeRemainingMs = payload.exp * 1000 - Date.now();
 
-        let activeTokens = restoredTokens;
+        // Refresh tokens if expiring soon
         if (timeRemainingMs < 2 * 60 * 1000) {
-          activeTokens = await refreshSession(restoredTokens);
+          await refreshSession(restoredTokens);
         }
 
         await connectAndSetWallet(storedProvider, storedWallet);
