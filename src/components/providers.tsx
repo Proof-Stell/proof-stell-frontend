@@ -1,3 +1,4 @@
+"use client";
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { getConfiguredProviders, connectToProvider } from "../lib/wallet";
 import { encryptData, decryptData } from "../utils/crypto";

@@ -1,7 +1,7 @@
+"use client";
 import React, { useState } from "react";
-import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useWallet } from "@/components/providers";
 
 type Step = "choose" | "connecting" | "success" | "error";
@@ -55,9 +55,7 @@ export default function SignupPage() {
 
   return (
     <>
-      <Head>
-        <title>Connect Wallet — ProofStell</title>
-      </Head>
+      <title>Connect Wallet — ProofStell</title>
 
       <div style={styles.page}>
         {/* Grid overlay */}
