@@ -1,7 +1,7 @@
+"use client";
 import React, { useCallback, useRef, useState } from "react";
-import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { hashFile, shortHash } from "@/utils/hash";
 import {
   verifyDocumentHash,
@@ -134,9 +134,7 @@ export default function VerifyPage() {
 
   return (
     <>
-      <Head>
-        <title>Verify Document — ProofStell</title>
-      </Head>
+      <title>Verify Document — ProofStell</title>
 
       <div style={s.page}>
         <div style={s.gridOverlay} />

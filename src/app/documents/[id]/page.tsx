@@ -1,7 +1,7 @@
+"use client";
 import React, { useEffect, useState } from "react";
-import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useParams, useRouter } from "next/navigation";
 import { getCredentialById, type CredentialDetail, type VerificationStatus } from "@/lib/api/proofstell";
 import { shortHash } from "@/utils/hash";
 
@@ -36,7 +36,8 @@ function CopyButton({ value }: { value: string }) {
 
 export default function CredentialDetailPage() {
   const router = useRouter();
-  const { id } = router.query as { id?: string };
+  const params = useParams();
+  const id = params?.id as string | undefined;
   const [cred, setCred] = useState<CredentialDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,9 +54,7 @@ export default function CredentialDetailPage() {
 
   return (
     <>
-      <Head>
-        <title>{cred ? `${cred.title} — ProofStell` : "Credential — ProofStell"}</title>
-      </Head>
+      <title>{cred ? `${cred.title} — ProofStell` : "Credential — ProofStell"}</title>
 
       <div style={s.page}>
         <div style={s.grid} />

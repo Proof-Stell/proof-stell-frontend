@@ -1,7 +1,8 @@
+"use client";
 import React from "react";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { Navbar } from "@/components/landing/Navbar";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import TestimonialsSection from "../components/landing/TestimonialsSection";
 import FeaturesSection from "../components/landing/FeaturesSection";
 import HowItWorksSection from "../components/landing/HowItWorksSection";

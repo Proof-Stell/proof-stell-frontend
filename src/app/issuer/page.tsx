@@ -1,7 +1,8 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { useWallet } from "@/components/providers";
-import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   getCredentialsByWallet,
   issueCredential,
@@ -199,7 +200,7 @@ export default function IssuerPage() {
   if (status === "loading" || status === "idle") {
     return (
       <>
-        <Head><title>Loading Issuer Portal — ProofStell</title></Head>
+        <title>Loading Issuer Portal — ProofStell</title>
         <div style={p.page}>
           <div style={p.grid} />
           <div style={p.glow} />
@@ -214,7 +215,7 @@ export default function IssuerPage() {
   if (status === "unauthenticated") {
     return (
       <>
-        <Head><title>Access Issuer Portal — ProofStell</title></Head>
+        <title>Access Issuer Portal — ProofStell</title>
         <div style={p.page}>
           <div style={p.grid} />
           <div style={p.glow} />
@@ -259,7 +260,7 @@ export default function IssuerPage() {
 
   return (
     <>
-      <Head><title>Issuer Portal — ProofStell</title></Head>
+      <title>Issuer Portal — ProofStell</title>
 
       <div style={p.page}>
         <div style={p.grid} />

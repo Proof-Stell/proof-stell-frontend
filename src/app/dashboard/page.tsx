@@ -1,8 +1,8 @@
+"use client";
 import React, { useEffect, useState } from "react";
 import { useWallet } from "@/components/providers";
-import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import {
   getCredentialsByWallet,
   type CredentialSummary,
@@ -133,7 +133,7 @@ export default function DashboardPage() {
   if (status === "loading" || status === "idle") {
     return (
       <>
-        <Head><title>Loading Dashboard — ProofStell</title></Head>
+        <title>Loading Dashboard — ProofStell</title>
         <div style={s.page}>
           <div style={s.grid} />
           <div style={s.glow} />
@@ -148,7 +148,7 @@ export default function DashboardPage() {
   if (status === "unauthenticated") {
     return (
       <>
-        <Head><title>Access Dashboard — ProofStell</title></Head>
+        <title>Access Dashboard — ProofStell</title>
         <div style={s.page}>
           <div style={s.grid} />
           <div style={s.glow} />
@@ -193,7 +193,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Head><title>Credential Dashboard — ProofStell</title></Head>
+      <title>Credential Dashboard — ProofStell</title>
 
       <div style={s.page}>
         <div style={s.grid} />
