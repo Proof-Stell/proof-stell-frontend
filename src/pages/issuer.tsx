@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useWallet } from "@/components/providers";
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import {
   getCredentialsByWallet,
   issueCredential,

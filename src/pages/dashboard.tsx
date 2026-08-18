@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import {
   getCredentialsByWallet,
+  ResponseValidationError,
   type CredentialSummary,
   type VerificationStatus,
 } from "@/lib/api/proofstell";
@@ -24,8 +25,7 @@ function fmt(iso?: string) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-// ── Dummy wallet address for demo ─────────────────────────────────────────
-const DEMO_WALLET = "GABC4364PEPQTDICMIQDZ56K4T75QZCR4NBEYKO6PDRFERNTR5LR2HP";
+
 
 // ── Credential card ────────────────────────────────────────────────────────
 
@@ -116,8 +116,14 @@ export default function DashboardPage() {
         setLoading(false);
       })
       .catch((e) => {
-        const msg = e && typeof e.message === "string" ? e.message : "Failed to load credentials. Please try again later.";
-        setError(msg === "Failed to fetch" ? "Network error. Please try again later." : msg);
+        if (e instanceof ResponseValidationError) {
+          // The API drifted from its contract; the message already
+          // pinpoints the offending field(s), so surface it directly.
+          setError(e.message);
+        } else {
+          const msg = e && typeof e.message === "string" ? e.message : "Failed to load credentials. Please try again later.";
+          setError(msg === "Failed to fetch" ? "Network error. Please try again later." : msg);
+        }
         setLoading(false);
       });
   }, [status, walletAddress]);

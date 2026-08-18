@@ -12,66 +12,147 @@
  * base-URL, and error normalisation are handled in one place.
  */
 
+import { z } from "zod";
+
 import { env } from "@/config/environment";
 
-// ─── Domain types ──────────────────────────────────────────────────────────
+// ─── Domain types & schemas ────────────────────────────────────────────────
+//
+// Every API response type is defined as a Zod schema so the client can
+// validate payloads at runtime before they reach components. The TypeScript
+// types are derived from the schemas (`z.infer`), keeping the two always in
+// sync.
 
-export type VerificationStatus = "valid" | "not_found" | "revoked" | "expired";
+/** Status of an on-chain verification record. */
+export const verificationStatusSchema = z.enum([
+  "valid",
+  "not_found",
+  "revoked",
+  "expired",
+]);
 
-export interface VerificationResult {
-  status: VerificationStatus;
-  hash: string;
-  /** On-chain block number where the record was found */
-  block?: number;
-  /** ISO-8601 timestamp of the on-chain record */
-  issuedAt?: string;
-  /** ISO-8601 expiry timestamp (if set by issuer) */
-  expiresAt?: string;
-  issuer?: IssuerInfo;
-  credential?: CredentialSummary;
-}
+/** Status of an on-chain verification record. */
+export type VerificationStatus = z.infer<typeof verificationStatusSchema>;
 
-export interface IssuerInfo {
-  walletAddress: string;
-  name: string;
-  verified: boolean;
-  logoUrl?: string;
-}
+/**
+ * Zod schema for the issuer of a credential.
+ *
+ * @example
+ * const result = issuerInfoSchema.safeParse(payload);
+ */
+export const issuerInfoSchema = z.object({
+  walletAddress: z.string().describe("Stellar wallet address of the issuer"),
+  name: z.string().describe("Display name of the issuing entity"),
+  verified: z.boolean().describe("Whether the issuer identity is verified"),
+  logoUrl: z.string().url().optional().describe("URL of the issuer logo"),
+});
 
-export interface CredentialSummary {
-  id: string;
-  title: string;
-  type: string;
-  hash: string;
-  status: VerificationStatus;
-  issuedAt: string;
-  expiresAt?: string;
-  issuer: IssuerInfo;
-  /** Stellar Horizon transaction ID */
-  txId?: string;
-  /** Block number */
-  block?: number;
-}
+/** Issuer of a credential. */
+export type IssuerInfo = z.infer<typeof issuerInfoSchema>;
 
-export interface CredentialDetail extends CredentialSummary {
-  recipientWallet: string;
-  metadata: Record<string, string>;
-  description?: string;
-  /** IPFS CID for off-chain metadata (optional) */
-  ipfsCid?: string;
-}
+/**
+ * Zod schema for a summary of a credential listed on the dashboard.
+ *
+ * @example
+ * const result = credentialSummarySchema.safeParse(payload);
+ */
+export const credentialSummarySchema = z.object({
+  id: z.string().describe("Unique credential identifier"),
+  title: z.string().describe("Human-readable title of the credential"),
+  type: z.string().describe("Credential type, e.g. 'Academic Degree'"),
+  hash: z.string().describe("SHA-256 hash of the underlying document"),
+  status: verificationStatusSchema,
+  issuedAt: z.string().describe("ISO-8601 timestamp of issuance"),
+  expiresAt: z.string().optional().describe("ISO-8601 expiry timestamp"),
+  issuer: issuerInfoSchema,
+  txId: z.string().optional().describe("Stellar Horizon transaction ID"),
+  block: z.number().optional().describe("On-chain block number"),
+});
 
-export interface IssueCredentialInput {
-  recipientWallet: string;
-  title: string;
-  type: string;
-  description?: string;
-  /** SHA-256 hash of the document */
-  documentHash: string;
-  metadata?: Record<string, string>;
-  /** ISO-8601 expiry date (optional) */
-  expiresAt?: string;
-}
+/** Summary of a credential listed on the dashboard. */
+export type CredentialSummary = z.infer<typeof credentialSummarySchema>;
+
+/**
+ * Zod schema for a detailed credential view.
+ *
+ * @example
+ * const result = credentialDetailSchema.safeParse(payload);
+ */
+export const credentialDetailSchema = credentialSummarySchema.extend({
+  recipientWallet: z
+    .string()
+    .describe("Stellar wallet address of the recipient"),
+  metadata: z
+    .record(z.string())
+    .describe("Arbitrary key/value metadata attached to the credential"),
+  description: z.string().optional().describe("Long-form description"),
+  ipfsCid: z.string().optional().describe("IPFS CID for off-chain metadata"),
+});
+
+/** Detailed credential view. */
+export type CredentialDetail = z.infer<typeof credentialDetailSchema>;
+
+/**
+ * Zod schema for a verification lookup result.
+ *
+ * @example
+ * const result = verificationResultSchema.safeParse(payload);
+ */
+export const verificationResultSchema = z.object({
+  status: verificationStatusSchema,
+  hash: z.string().describe("Document hash that was verified"),
+  block: z.number().optional().describe("On-chain block number of the record"),
+  issuedAt: z
+    .string()
+    .optional()
+    .describe("ISO-8601 timestamp of the on-chain record"),
+  expiresAt: z
+    .string()
+    .optional()
+    .describe("ISO-8601 expiry timestamp, if set by the issuer"),
+  issuer: issuerInfoSchema.optional(),
+  credential: credentialSummarySchema.optional(),
+});
+
+/** Verification lookup result. */
+export type VerificationResult = z.infer<typeof verificationResultSchema>;
+
+/**
+ * Zod schema for the payload used to issue a new credential.
+ *
+ * @example
+ * const result = issueCredentialInputSchema.safeParse(payload);
+ */
+export const issueCredentialInputSchema = z.object({
+  recipientWallet: z
+    .string()
+    .describe("Stellar wallet address of the recipient"),
+  title: z.string().describe("Title of the credential"),
+  type: z.string().describe("Credential type, e.g. 'Academic Degree'"),
+  description: z.string().optional().describe("Long-form description"),
+  documentHash: z.string().describe("SHA-256 hash of the document"),
+  metadata: z
+    .record(z.string())
+    .optional()
+    .describe("Arbitrary key/value metadata"),
+  expiresAt: z
+    .string()
+    .optional()
+    .describe("ISO-8601 expiry date, if any"),
+});
+
+/** Payload used to issue a new credential. */
+export type IssueCredentialInput = z.infer<typeof issueCredentialInputSchema>;
+
+/**
+ * Zod schema for the revoke endpoint response.
+ *
+ * @example
+ * const result = revokeResultSchema.safeParse(payload);
+ */
+export const revokeResultSchema = z.object({
+  success: z.boolean().describe("Whether the credential was revoked"),
+});
 
 // ─── HTTP helper ──────────────────────────────────────────────────────────
 
@@ -86,20 +167,64 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Thrown when an API response fails runtime validation against its Zod
+ * schema. Carries the Zod issues so callers can surface a descriptive,
+ * field-level error message.
+ */
+export class ResponseValidationError extends Error {
+  /** Zod issues describing every field that failed validation. */
+  public readonly issues: z.ZodIssue[];
+
+  constructor(public readonly endpoint: string, error: z.ZodError) {
+    const details = error.issues
+      .map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
+      .join("; ");
+    super(
+      `API response validation failed for ${endpoint}. Details: ${details}`,
+    );
+    this.name = "ResponseValidationError";
+    this.issues = error.issues;
+  }
+}
+
+/**
+ * Validates `data` against `schema` and returns it, or throws a descriptive
+ * `ResponseValidationError` when the payload does not match the expected
+ * contract.
+ */
+function validateResponse<T>(
+  endpoint: string,
+  schema: z.ZodType<T> | undefined,
+  data: T,
+): T {
+  if (!schema) return data;
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) {
+    throw new ResponseValidationError(endpoint, parsed.error);
+  }
+  return parsed.data;
+}
+
+/**
+ * Core request helper: attaches auth headers, retries transient failures
+ * with exponential backoff, unwraps the standard success envelope, and
+ * validates the resulting payload against `schema` when provided.
+ */
 async function request<T>(
   path: string,
   options: RequestInit = {},
+  schema?: z.ZodType<T>,
   retries = 3,
   backoffMs = 500,
 ): Promise<T> {
-  const base =
-    (env.NEXT_PUBLIC_API_BASE_URL as string | undefined) ?? "/api";
+  const base = env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
   const url = `${base}${path}`;
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...(env.NEXT_PUBLIC_API_KEY
-      ? { "X-API-Key": env.NEXT_PUBLIC_API_KEY as string }
+      ? { "X-API-Key": env.NEXT_PUBLIC_API_KEY }
       : {}),
     ...(options.headers ?? {}),
   };
@@ -136,15 +261,21 @@ async function request<T>(
             res.status,
           );
         }
-        return envelope.data as T;
+        return validateResponse(path, schema, envelope.data as T);
       }
 
-      return body as unknown as T;
+      return validateResponse(path, schema, body as unknown as T);
     } catch (error) {
       lastError = error as Error;
 
-      // Do not retry on client errors (4xx)
+      // Do not retry on client errors (4xx) — the request itself is bad.
       if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
+        throw error;
+      }
+
+      // Do not retry on schema validation failures — retrying the same
+      // request will produce the same malformed payload again.
+      if (error instanceof ResponseValidationError) {
         throw error;
       }
 
@@ -175,7 +306,11 @@ export async function verifyDocumentHash(
   if (!env.NEXT_PUBLIC_API_BASE_URL) {
     return mockVerifyHash(hash);
   }
-  return request<VerificationResult>(`/verify/${encodeURIComponent(hash)}`);
+  return request<VerificationResult>(
+    `/verify/${encodeURIComponent(hash)}`,
+    {},
+    verificationResultSchema,
+  );
 }
 
 /**
@@ -189,6 +324,8 @@ export async function getCredentialsByWallet(
   }
   return request<CredentialSummary[]>(
     `/credentials?wallet=${encodeURIComponent(walletAddress)}`,
+    {},
+    z.array(credentialSummarySchema),
   );
 }
 
@@ -201,7 +338,11 @@ export async function getCredentialById(
   if (!env.NEXT_PUBLIC_API_BASE_URL) {
     return mockCredentialDetail(id);
   }
-  return request<CredentialDetail>(`/credentials/${encodeURIComponent(id)}`);
+  return request<CredentialDetail>(
+    `/credentials/${encodeURIComponent(id)}`,
+    {},
+    credentialDetailSchema,
+  );
 }
 
 /**
@@ -211,11 +352,15 @@ export async function issueCredential(
   input: IssueCredentialInput,
   issuerWalletAddress: string,
 ): Promise<CredentialSummary> {
-  return request<CredentialSummary>("/credentials", {
-    method: "POST",
-    headers: { "X-Wallet-Address": issuerWalletAddress },
-    body: JSON.stringify(input),
-  });
+  return request<CredentialSummary>(
+    "/credentials",
+    {
+      method: "POST",
+      headers: { "X-Wallet-Address": issuerWalletAddress },
+      body: JSON.stringify(input),
+    },
+    credentialSummarySchema,
+  );
 }
 
 /**
@@ -225,10 +370,14 @@ export async function revokeCredential(
   id: string,
   issuerWalletAddress: string,
 ): Promise<{ success: boolean }> {
-  return request<{ success: boolean }>(`/credentials/${encodeURIComponent(id)}/revoke`, {
-    method: "POST",
-    headers: { "X-Wallet-Address": issuerWalletAddress },
-  });
+  return request<{ success: boolean }>(
+    `/credentials/${encodeURIComponent(id)}/revoke`,
+    {
+      method: "POST",
+      headers: { "X-Wallet-Address": issuerWalletAddress },
+    },
+    revokeResultSchema,
+  );
 }
 
 // ─── Mock data for local development ──────────────────────────────────────
@@ -347,7 +496,7 @@ if (import.meta.vitest) {
         .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ success: true, data: { status: "valid", hash: "123" } }) });
 
       const result = await verifyDocumentHash("123");
-      
+
       expect(fetchMock).toHaveBeenCalledTimes(3);
       expect(result).toEqual({ status: "valid", hash: "123" });
     });

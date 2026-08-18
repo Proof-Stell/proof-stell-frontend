@@ -27,7 +27,7 @@ async function handler(
   }
 
   const requestId = (req as NextApiRequest & { requestId: string }).requestId;
-  const { address, signature, walletId } = bodySchema.parse(req.body ?? {});
+  const { address, signature } = bodySchema.parse(req.body ?? {});
 
   // Simulate signature verification for SEP-0010
   // In production, you would decode the SEP-0010 transaction envelope, verify the signatures,
