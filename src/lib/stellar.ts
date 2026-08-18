@@ -16,7 +16,13 @@ class SorobanService {
     return (env.NEXT_PUBLIC_SOROBAN_NETWORK_PASSPHRASE as string | undefined) ?? "";
   }
 
-  async rpc(method: string, params: unknown[] = []): Promise<unknown> {
+  /**
+   * Issues a JSON-RPC call to the configured Soroban endpoint. Accepts an
+   * optional AbortSignal so callers can cancel in-flight requests on unmount
+   * or effect re-run, preventing dangling fetches after a component leaves
+   * the tree (a common source of "connection leak" React warnings).
+   */
+  async rpc(method: string, params: unknown[] = [], signal?: AbortSignal): Promise<unknown> {
     if (!this.rpcUrl) {
       throw new Error(
         "NEXT_PUBLIC_SOROBAN_RPC_URL is not set. Cannot make RPC calls.",
@@ -27,6 +33,7 @@ class SorobanService {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body,
+      signal,
     });
 
     const json = (await res.json()) as JsonRpcResponse;
