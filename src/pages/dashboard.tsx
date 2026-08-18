@@ -116,7 +116,8 @@ export default function DashboardPage() {
         setLoading(false);
       })
       .catch((e) => {
-        setError(e.message ?? "Failed to load credentials");
+        const msg = e && typeof e.message === "string" ? e.message : "Failed to load credentials. Please try again later.";
+        setError(msg === "Failed to fetch" ? "Network error. Please try again later." : msg);
         setLoading(false);
       });
   }, [status, walletAddress]);

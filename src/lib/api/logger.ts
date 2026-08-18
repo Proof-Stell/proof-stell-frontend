@@ -59,10 +59,19 @@ export function logError(
   const { method, url } = req;
   const message = error instanceof Error ? error.message : String(error);
   const stack = error instanceof Error ? error.stack : undefined;
+  const name = error instanceof Error ? error.name : undefined;
+
+  let errorType = "server_error";
+  if (name === "ZodError" || name === "SyntaxError") {
+    errorType = "client_error";
+  } else if (name === "TimeoutError") {
+    errorType = "network_timeout";
+  }
 
   console.error(
     JSON.stringify({
       type: "error",
+      errorType,
       requestId,
       method,
       url,

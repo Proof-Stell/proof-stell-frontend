@@ -75,7 +75,7 @@ export interface IssueCredentialInput {
 
 // ─── HTTP helper ──────────────────────────────────────────────────────────
 
-class ApiError extends Error {
+export class ApiError extends Error {
   constructor(
     public readonly code: string,
     message: string,
@@ -89,6 +89,8 @@ class ApiError extends Error {
 async function request<T>(
   path: string,
   options: RequestInit = {},
+  retries = 3,
+  backoffMs = 500,
 ): Promise<T> {
   const base =
     (env.NEXT_PUBLIC_API_BASE_URL as string | undefined) ?? "/api";
@@ -102,38 +104,62 @@ async function request<T>(
     ...(options.headers ?? {}),
   };
 
-  const res = await fetch(url, { ...options, headers });
+  let lastError: Error | null = null;
 
-  // Try to parse JSON body for error details
-  let body: Record<string, unknown> | null;
-  try {
-    body = await res.json() as Record<string, unknown>;
-  } catch {
-    body = null;
-  }
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, { ...options, headers });
 
-  if (!res.ok) {
-    const errBody = body as { error?: { code?: string; message?: string } } | null;
-    const code = errBody?.error?.code ?? "API_ERROR";
-    const message =
-      errBody?.error?.message ?? `Request failed with status ${res.status}`;
-    throw new ApiError(code, message, res.status);
-  }
+      // Try to parse JSON body for error details
+      let body: Record<string, unknown> | null;
+      try {
+        body = (await res.json()) as Record<string, unknown>;
+      } catch {
+        body = null;
+      }
 
-  // Unwrap standard { success: true, data: T } envelope
-  if (body && "success" in body) {
-    const envelope = body as { success: boolean; data?: T; error?: { code?: string; message?: string } };
-    if (!envelope.success) {
-      throw new ApiError(
-        envelope.error?.code ?? "API_ERROR",
-        envelope.error?.message ?? "Unknown API error",
-        res.status,
-      );
+      if (!res.ok) {
+        const errBody = body as { error?: { code?: string; message?: string } } | null;
+        const code = errBody?.error?.code ?? "API_ERROR";
+        const message =
+          errBody?.error?.message ?? `Request failed with status ${res.status}`;
+        throw new ApiError(code, message, res.status);
+      }
+
+      // Unwrap standard { success: true, data: T } envelope
+      if (body && "success" in body) {
+        const envelope = body as { success: boolean; data?: T; error?: { code?: string; message?: string } };
+        if (!envelope.success) {
+          throw new ApiError(
+            envelope.error?.code ?? "API_ERROR",
+            envelope.error?.message ?? "Unknown API error",
+            res.status,
+          );
+        }
+        return envelope.data as T;
+      }
+
+      return body as unknown as T;
+    } catch (error) {
+      lastError = error as Error;
+
+      // Do not retry on client errors (4xx)
+      if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
+        throw error;
+      }
+
+      // If out of retries, throw
+      if (attempt === retries) {
+        throw error;
+      }
+
+      // Exponential backoff
+      const delay = backoffMs * 2 ** attempt;
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
-    return envelope.data as T;
   }
 
-  return body as unknown as T;
+  throw lastError ?? new Error("Unknown error during request");
 }
 
 // ─── API methods ──────────────────────────────────────────────────────────
@@ -301,4 +327,37 @@ function mockCredentialDetail(id: string): CredentialDetail {
     },
     ipfsCid: "QmXtZqFgYiHjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQr",
   };
+}
+
+// ─── Tests ────────────────────────────────────────────────────────────────
+if (import.meta.vitest) {
+  const { describe, it, expect, vi, beforeEach } = import.meta.vitest;
+
+  describe("ProofStell API Client Retry Logic", () => {
+    beforeEach(() => {
+      vi.resetAllMocks();
+      global.fetch = vi.fn();
+    });
+
+    it("should retry on 5xx errors and eventually succeed", async () => {
+      const fetchMock = global.fetch as any;
+      fetchMock
+        .mockResolvedValueOnce({ ok: false, status: 500, json: async () => ({}) })
+        .mockResolvedValueOnce({ ok: false, status: 503, json: async () => ({}) })
+        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => ({ success: true, data: { status: "valid", hash: "123" } }) });
+
+      const result = await verifyDocumentHash("123");
+      
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(result).toEqual({ status: "valid", hash: "123" });
+    });
+
+    it("should not retry on 4xx errors", async () => {
+      const fetchMock = global.fetch as any;
+      fetchMock.mockResolvedValueOnce({ ok: false, status: 404, json: async () => ({ error: { code: "NOT_FOUND", message: "Not found" } }) });
+
+      await expect(verifyDocumentHash("123")).rejects.toThrow("Not found");
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+  });
 }

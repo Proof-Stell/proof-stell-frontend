@@ -113,8 +113,7 @@ export function withErrorHandling<T>(
       }
 
       // Generic → 500 Internal Error (normalise any unexpected exception)
-      const message =
-        error instanceof Error ? error.message : "An unexpected error occurred";
+      const message = "An unexpected error occurred";
 
       logResponse(req, requestId, 500, startTime);
       return res.status(500).json({
@@ -183,4 +182,46 @@ export class TimeoutError extends Error {
     super(message);
     this.name = "TimeoutError";
   }
+}
+
+// ─── Tests ────────────────────────────────────────────────────────────────
+if (import.meta.vitest) {
+  const { describe, it, expect, vi } = import.meta.vitest;
+  
+  vi.mock("./logger", () => ({
+    generateRequestId: () => "test-req-id",
+    logRequest: vi.fn(),
+    logResponse: vi.fn(),
+    logError: vi.fn(),
+  }));
+
+  describe("errorHandler", () => {
+    it("should mask 500 error messages to prevent sensitive data leaks", async () => {
+      const handler = async () => {
+        throw new Error("Secret database connection string leaked!");
+      };
+
+      const wrapped = withErrorHandling(handler as any);
+      const req = {} as any;
+      const res = {
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn(),
+        on: vi.fn(),
+        headersSent: false,
+        writableEnded: false,
+      } as any;
+
+      await wrapped(req, res);
+      
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          error: expect.objectContaining({
+            message: "An unexpected error occurred",
+          }),
+        })
+      );
+    });
+  });
 }
