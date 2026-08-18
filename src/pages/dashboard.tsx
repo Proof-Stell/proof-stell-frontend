@@ -116,15 +116,14 @@ export default function DashboardPage() {
         setLoading(false);
       })
       .catch((e) => {
-        // A ResponseValidationError means the API drifted from its contract;
-        // its message already pinpoints the offending field(s).
-        setError(
-          e instanceof ResponseValidationError
-            ? e.message
-            : e instanceof Error
-              ? e.message
-              : "Failed to load credentials",
-        );
+        if (e instanceof ResponseValidationError) {
+          // The API drifted from its contract; the message already
+          // pinpoints the offending field(s), so surface it directly.
+          setError(e.message);
+        } else {
+          const msg = e && typeof e.message === "string" ? e.message : "Failed to load credentials. Please try again later.";
+          setError(msg === "Failed to fetch" ? "Network error. Please try again later." : msg);
+        }
         setLoading(false);
       });
   }, [status, walletAddress]);
