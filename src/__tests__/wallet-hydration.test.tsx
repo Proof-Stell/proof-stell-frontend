@@ -19,6 +19,11 @@ import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Providers, useWallet } from "@/components/providers";
 
+// Tells React this environment supports act() batching/flushing so it
+// doesn't warn on every state update inside act() (happy-dom doesn't set
+// this itself). Cosmetic only — assertions already passed without it.
+(globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
 function Consumer() {
   const { status, isHydrated } = useWallet();
   return React.createElement(
