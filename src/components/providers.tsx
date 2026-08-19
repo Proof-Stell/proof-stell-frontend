@@ -1,10 +1,15 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { connectToProvider } from "../lib/wallet";
+import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
+import { connectToProvider, getAvailableProviders, isBrowser } from "../lib/wallet";
 import { encryptData, decryptData } from "../utils/crypto";
 
 // Context value describing wallet and authentication state
 export interface WalletContextValue {
   status: "idle" | "loading" | "connected" | "unauthenticated" | "error";
+  // True once the client has hydrated and the initial session restore has run.
+  // Consumers should show a skeleton/placeholder while this is false to avoid
+  // flashing state that depends on browser-only data (localStorage, extensions).
+  isHydrated: boolean;
+  availableProviders: string[];
   provider?: unknown;
   walletAddress?: string;
   tokens?: { accessToken: string; refreshToken: string };
@@ -15,6 +20,8 @@ export interface WalletContextValue {
 
 const WalletContext = createContext<WalletContextValue>({
   status: "idle",
+  isHydrated: false,
+  availableProviders: [],
   login: async () => {},
   logout: async () => {},
 });
@@ -60,19 +67,28 @@ function getCookie(name: string): string | null {
  */
 export function Providers({ children }: ProvidersProps) {
   const [status, setStatus] = useState<WalletContextValue["status"]>("idle");
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [availableProviders, setAvailableProviders] = useState<string[]>([]);
   const [provider, setProvider] = useState<unknown>(null);
   const [walletAddress, setWalletAddress] = useState<string | undefined>(undefined);
   const [tokens, setTokens] = useState<WalletContextValue["tokens"]>(undefined);
   const [error, setError] = useState<Error | undefined>(undefined);
 
+  // Tracks whether this component instance is still mounted so async work
+  // (session restore, login, refresh) never calls setState on an unmounted
+  // instance — the source of the "connection leak" warnings in the ticket.
+  const isMountedRef = useRef(false);
+
   // Helper to connect to provider and update state
-  const connectAndSetWallet = async (walletId: string, address: string) => {
+  const connectAndSetWallet = async (walletId: string, address: string, signal?: AbortSignal) => {
     try {
-      const p = await connectToProvider(walletId);
+      const p = await connectToProvider(walletId, signal);
+      if (!isMountedRef.current || signal?.aborted) return;
       setProvider(p);
       setWalletAddress(address);
       setStatus("connected");
     } catch (e) {
+      if (!isMountedRef.current || signal?.aborted) return;
       console.warn("Wallet extension connection warning:", e);
       // Even if extension connection fails, stay authenticated on client if tokens are valid
       setProvider(null);
@@ -131,10 +147,12 @@ export function Providers({ children }: ProvidersProps) {
       localStorage.setItem("proofstell_session_wallet", authedAddress);
       localStorage.setItem("proofstell_session_tokens", encryptedTokens);
 
+      if (!isMountedRef.current) return;
       setTokens(tokensObj);
       setWalletAddress(authedAddress);
       setStatus("connected");
     } catch (err: any) {
+      if (!isMountedRef.current) throw err;
       setError(err);
       setStatus("error");
       throw err;
@@ -143,7 +161,7 @@ export function Providers({ children }: ProvidersProps) {
 
   // Logout handler
   const logout = async () => {
-    setStatus("loading");
+    if (isMountedRef.current) setStatus("loading");
     try {
       await fetch("/api/auth/logout", { method: "POST" }).catch((e) => console.error("Logout API failed", e));
     } finally {
@@ -151,10 +169,12 @@ export function Providers({ children }: ProvidersProps) {
       localStorage.removeItem("proofstell_session_wallet");
       localStorage.removeItem("proofstell_session_tokens");
 
-      setProvider(null);
-      setWalletAddress(undefined);
-      setTokens(undefined);
-      setStatus("unauthenticated");
+      if (isMountedRef.current) {
+        setProvider(null);
+        setWalletAddress(undefined);
+        setTokens(undefined);
+        setStatus("unauthenticated");
+      }
     }
   };
 
@@ -184,7 +204,7 @@ export function Providers({ children }: ProvidersProps) {
       const encryptedTokens = await encryptData(JSON.stringify(newTokens));
       localStorage.setItem("proofstell_session_tokens", encryptedTokens);
 
-      setTokens(newTokens);
+      if (isMountedRef.current) setTokens(newTokens);
       return newTokens;
     } catch (e) {
       console.error("Token refresh failed, logging out:", e);
@@ -193,28 +213,50 @@ export function Providers({ children }: ProvidersProps) {
     }
   };
 
-  // Session restoration on mount
+  // Marks this instance as mounted for the lifetime of the component. Runs
+  // before the effects below so their async continuations can safely check
+  // it. React (Strict Mode in dev) may mount -> cleanup -> mount an instance
+  // twice; without this, a stale first-pass restore could still land after
+  // the second mount and clobber fresh state — the exact SSR/hydration race
+  // this fix addresses.
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  // Session restoration — deferred until this runs, i.e. after client
+  // hydration has completed (effects never run during SSR or hydration
+  // itself). An AbortController scopes every async step so a re-run or
+  // unmount discards stale work instead of applying it.
+  useEffect(() => {
+    if (!isBrowser()) return;
+
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    setAvailableProviders(getAvailableProviders());
 
     const restoreSession = async () => {
-      const storedProvider = localStorage.getItem("proofstell_session_provider");
-      const storedWallet = localStorage.getItem("proofstell_session_wallet");
-      const storedTokensEnc = localStorage.getItem("proofstell_session_tokens");
-
-      if (!storedProvider || !storedWallet || !storedTokensEnc) {
-        setStatus("unauthenticated");
-        return;
-      }
-
       try {
+        const storedProvider = localStorage.getItem("proofstell_session_provider");
+        const storedWallet = localStorage.getItem("proofstell_session_wallet");
+        const storedTokensEnc = localStorage.getItem("proofstell_session_tokens");
+
+        if (!storedProvider || !storedWallet || !storedTokensEnc) {
+          if (isMountedRef.current && !signal.aborted) setStatus("unauthenticated");
+          return;
+        }
+
         const decryptedTokensStr = await decryptData(storedTokensEnc);
+        if (signal.aborted) return;
         if (!decryptedTokensStr) {
           throw new Error("Failed to decrypt tokens");
         }
 
         const restoredTokens = JSON.parse(decryptedTokensStr) as { accessToken: string; refreshToken: string };
-        setTokens(restoredTokens);
+        if (isMountedRef.current) setTokens(restoredTokens);
 
         const payload = parseJwt(restoredTokens.accessToken);
         if (!payload || !payload.exp) {
@@ -227,18 +269,26 @@ export function Providers({ children }: ProvidersProps) {
         if (timeRemainingMs < 2 * 60 * 1000) {
           await refreshSession(restoredTokens);
         }
+        if (signal.aborted) return;
 
-        await connectAndSetWallet(storedProvider, storedWallet);
+        await connectAndSetWallet(storedProvider, storedWallet, signal);
       } catch (err) {
+        if (signal.aborted || !isMountedRef.current) return;
         console.error("Session restoration failed:", err);
         localStorage.removeItem("proofstell_session_provider");
         localStorage.removeItem("proofstell_session_wallet");
         localStorage.removeItem("proofstell_session_tokens");
         setStatus("unauthenticated");
+      } finally {
+        if (isMountedRef.current && !signal.aborted) setIsHydrated(true);
       }
     };
 
     restoreSession();
+
+    // Cancel any in-flight restore work if the effect re-runs or unmounts,
+    // e.g. under Strict Mode's mount/cleanup/mount cycle in development.
+    return () => controller.abort();
   }, []);
 
   // Background token refresh interval
@@ -246,6 +296,7 @@ export function Providers({ children }: ProvidersProps) {
     if (status !== "connected" || !tokens) return;
 
     const checkAndRefresh = async () => {
+      if (!isMountedRef.current) return;
       const payload = parseJwt(tokens.accessToken);
       if (!payload || !payload.exp) return;
 
@@ -254,7 +305,7 @@ export function Providers({ children }: ProvidersProps) {
         try {
           await refreshSession(tokens);
         } catch (err) {
-          console.error("Interval auto-refresh failed", err);
+          if (isMountedRef.current) console.error("Interval auto-refresh failed", err);
         }
       }
     };
@@ -267,6 +318,8 @@ export function Providers({ children }: ProvidersProps) {
     <WalletContext.Provider
       value={{
         status,
+        isHydrated,
+        availableProviders,
         provider,
         walletAddress,
         tokens,
