@@ -1,69 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { PlayerCard } from "../leaderboard/PlayerCard";
-import { mockPlayers } from "@/lib/mockData";
-import { env } from "@/config/environment";
 import { SECTION_IDS } from "@/config/landingContent";
-
-interface Player {
-  id: string;
-  rank: number;
-  previousRank?: number;
-  name: string;
-  level: number;
-  points: number;
-  avatar: string;
-  wallet?: string;
-  achievements: Achievement[];
-  streak: number;
-  gamesPlayed: number;
-  winRate: number;
-}
-
-interface Achievement {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  rarity: "common" | "rare" | "epic" | "legendary";
-}
+import { useLeaderboardData } from "@/hooks/useLeaderboardData";
 
 export function LeaderboardSection() {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Simulate API call
-  useEffect(() => {
-    const fetchLeaderboard = async () => {
-      try {
-        setLoading(true);
-        if (env.NEXT_PUBLIC_ENABLE_MOCK_DATA) {
-          await new Promise((resolve) => setTimeout(resolve, 1500));
-          setPlayers(mockPlayers as Player[]);
-        } else {
-          // Replace with real API call
-          // const res = await fetch('/api/leaderboard');
-          // const data = await res.json();
-          // setPlayers(data);
-          throw new Error("API not implemented yet");
-        }
-      } catch (error) {
-        setError("Failed to load leaderboard data");
-        console.error("Error fetching leaderboard:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchLeaderboard();
-
-    // Set up polling for real-time updates
-    const interval = setInterval(fetchLeaderboard, 180000);
-    return () => clearInterval(interval);
-  }, []);
+  const { players, loading, error } = useLeaderboardData();
 
   if (loading) {
     return (

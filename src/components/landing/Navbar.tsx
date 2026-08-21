@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useActiveSection } from "@/hooks/useActiveSection";
+import { useScrolled } from "@/hooks/useScrolled";
 import { useWallet } from "@/components/providers";
 import { NAV_LINKS } from "@/config/landingContent";
 import styles from "./Navbar.module.css";
@@ -12,26 +13,10 @@ interface NavbarProps {
 }
 
 export function Navbar({ onLoginClick }: NavbarProps) {
-  const [scrolled, setScrolled] = useState(false);
+  const scrolled = useScrolled(20);
   const activeSection = useActiveSection();
   const [menuOpen, setMenuOpen] = useState(false);
   const { status, error } = useWallet();
-
-  // Track scroll position for navbar styling (shadow on scroll)
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-
-    // Initial check in case page loads with scroll position
-    handleScroll();
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     const id = href.replace("/#", "");
