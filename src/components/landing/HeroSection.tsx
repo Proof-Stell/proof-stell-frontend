@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import styles from "./HeroSection.module.css";
 import { VerificationSteps } from "@/lib/mockData";
 import { env } from "@/config/environment";
 import { HERO_STATS } from "@/config/landingContent";
+import { useVerificationSimulation } from "@/hooks/useVerificationSimulation";
 
 interface HeroSectionProps {
   onSignUp: () => void;
@@ -11,37 +11,8 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ onSignUp }: HeroSectionProps) => {
   const router = useRouter();
-  const [activeStep, setActiveStep] = useState(0);
-  const [verified, setVerified] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // If mock data is disabled, we might want to skip the simulation or show a different UI.
-  // Given the requirement, I'll just keep the simulation but maybe wrap it in a conditional or just keep it as is if it's explicitly enabled.
-  // The issue says "Replace hard-coded... with a state-driven flow".
-  
   const showMock = env.NEXT_PUBLIC_ENABLE_MOCK_DATA;
-
-  useEffect(() => {
-    if (!showMock) return;
-
-    intervalRef.current = setInterval(() => {
-      setActiveStep((prev) => {
-        if (prev === VerificationSteps.length - 1) {
-          setVerified(true);
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-          }
-          return prev;
-        }
-        return prev + 1;
-      });
-    }, 900);
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [showMock]);
+  const { activeStep, verified } = useVerificationSimulation({ enabled: showMock });
 
   return (
     <section className={`relative w-full min-h-screen overflow-hidden ${styles.section}`} aria-label="Introduction">
